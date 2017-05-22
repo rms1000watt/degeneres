@@ -1,1 +1,10 @@
 .DS_Store
+out
+test
+certs/ca.cer
+certs/ca.key
+certs/serial
+certs/server.cer
+certs/server.csr
+certs/server.key
+degeneres
