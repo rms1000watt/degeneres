@@ -69,24 +69,27 @@ func (s Scanner) FileState() State {
 		for {
 			ru := s.read()
 
-			if isWhitespace(ru) {
-				continue
-			}
-
-			if ru == eof || isEqual(ru) || isDoubleQuote(ru) {
+			if ru == eof || isEqual(ru) || isWhitespace(ru) || isDoubleQuote(ru) {
 				break
 			}
 
 			inType = append(inType, ru)
 		}
 
-		// Check the inType.. if Option, do another round for k, v
+		if string(inType) == "service" {
+			return s.ServiceState
+		}
+
+		// if Option, do another round for k, v
+		if string(inType) == "option" {
+
+		}
 
 		// Parse inVal
 		for {
 			ru := s.read()
 
-			if isWhitespace(ru) || isDoubleQuote(ru) {
+			if isEqual(ru) || isWhitespace(ru) || isDoubleQuote(ru) {
 				continue
 			}
 
@@ -98,17 +101,27 @@ func (s Scanner) FileState() State {
 		}
 
 		// Handle the type and val
-		fmt.Println(string(inType), string(inVal))
+		fmt.Println("Type:", string(inType), "Val:", string(inVal))
 	}
 
 	return s.FileState
 }
 
-func (s Scanner) ServiceState(r rune) State {
-	return nil
+func (s Scanner) ServiceState() State {
+	r := s.read()
+	if r == eof {
+		return nil
+	}
+
+	return s.ServiceState
 }
 
-func (s Scanner) MessageState(r rune) State {
+func (s Scanner) MessageState() State {
+	r := s.read()
+	if r == eof {
+		return nil
+	}
+
 	return nil
 }
 
