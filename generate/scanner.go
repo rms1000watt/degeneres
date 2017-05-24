@@ -10,6 +10,7 @@ const (
 	TokenNameOption  = "option"
 	TokenNameKey     = "key"
 	TokenNameVal     = "val"
+	TokenNameMessage = "message"
 	TokenNameRPCName = "rpcName"
 	TokenNameRPCIn   = "rpcIn"
 	TokenNameRPCOut  = "rpcOut"
@@ -112,6 +113,16 @@ func (s Scanner) FileState() State {
 		})
 
 		return s.ServiceState
+	}
+
+	if string(key) == "message" {
+		val := s.getVal()
+		s.Emit(Token{
+			Name:  TokenNameMessage,
+			Value: string(val),
+		})
+
+		return s.MessageState
 	}
 
 	// Scan for option
