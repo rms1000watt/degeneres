@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package pb;
 
-import "github.com/rms1000watt/degeneres";
 import "github.com/rms1000watt/degeneres/pb/address.proto";
 
 option (dg.rpc_to_endpoints) = true;
