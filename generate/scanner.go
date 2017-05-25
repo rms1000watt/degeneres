@@ -7,13 +7,25 @@ import (
 )
 
 const (
-	TokenNameOption  = "option"
-	TokenNameKey     = "key"
-	TokenNameVal     = "val"
-	TokenNameMessage = "message"
-	TokenNameRPCName = "rpcName"
-	TokenNameRPCIn   = "rpcIn"
-	TokenNameRPCOut  = "rpcOut"
+	TokenFileOption            = "fileOption"
+	TokenFileKey               = "fileKey"
+	TokenFileVal               = "fileVal"
+	TokenMessage               = "message"
+	TokenRPCName               = "rpcName"
+	TokenRPCIn                 = "rpcIn"
+	TokenRPCOut                = "rpcOut"
+	TokenFileOptionKey         = "fileOptionKey"
+	TokenFileOptionVal         = "fileOptionVal"
+	TokenServiceKey            = "serviceKey"
+	TokenServiceOptionKey      = "serviceOptionKey"
+	TokenServiceOptionVal      = "serviceOptionVal"
+	TokenRPCOptionKey          = "rpcOptionKey"
+	TokenRPCOptionVal          = "rpcOptionVal"
+	TokenMessageKey            = "messageKey"
+	TokenMessageFieldDataType  = "messageFieldDataType"
+	TokenMessageFieldKey       = "messageFieldKey"
+	TokenMessageFieldOptionKey = "messageFieldOptionKey"
+	TokenMessageFieldOptionVal = "messageFieldOptionVal"
 )
 
 func Scan(filepath string) (out string, err error) {
@@ -24,12 +36,12 @@ func Scan(filepath string) (out string, err error) {
 		fmt.Errorf("Failed reading file: %s: %s", filepath, err)
 		return
 	}
-	tokenCh := make(chan Token)
+	dgTokens := make(chan Token)
 
-	s := NewScanner(fileBytes, tokenCh)
+	s := NewScanner(fileBytes, dgTokens, "dg")
 	go s.Start()
 
-	for token := range tokenCh {
+	for token := range dgTokens {
 		fmt.Println(token)
 	}
 
@@ -39,22 +51,25 @@ func Scan(filepath string) (out string, err error) {
 type State func() State
 
 type Token struct {
-	Name  string
-	Value string
+	Name      string
+	Value     string
+	Namespace string
 }
 
 type Scanner struct {
-	State    State
-	TokenCh  chan Token
-	InputBuf *bytes.Buffer
+	State     State
+	TokenCh   chan Token
+	InputBuf  *bytes.Buffer
+	Namespace string
 }
 
 var eof = rune(0)
 
-func NewScanner(inputBytes []byte, tokenCh chan Token) Scanner {
+func NewScanner(inputBytes []byte, tokenCh chan Token, namespace string) Scanner {
 	return Scanner{
-		InputBuf: bytes.NewBuffer(inputBytes),
-		TokenCh:  tokenCh,
+		InputBuf:  bytes.NewBuffer(inputBytes),
+		TokenCh:   tokenCh,
+		Namespace: namespace,
 	}
 }
 
@@ -67,14 +82,14 @@ func (s Scanner) Start() {
 }
 
 func (s Scanner) Emit(token Token) {
-	// Change this to publish to a channel
-	// s.Tokens = append(s.Tokens, token)
+	token.Namespace = s.Namespace
 	s.TokenCh <- token
 }
 
 func (s Scanner) read() rune {
 	r, _, err := s.InputBuf.ReadRune()
 	if err != nil {
+		fmt.Println("Failed reading rune:", err)
 		return eof
 	}
 	return r
@@ -83,7 +98,7 @@ func (s Scanner) read() rune {
 func (s Scanner) unread() {
 	err := s.InputBuf.UnreadRune()
 	if err != nil {
-		fmt.Println("Error unreading rune:", err)
+		fmt.Println("Failed unreading rune:", err)
 	}
 }
 
@@ -91,7 +106,7 @@ func (s Scanner) FileState() State {
 	r := s.read()
 
 	for !isLetter(r) {
-		if r == eof {
+		if isEOF(r) {
 			return nil
 		}
 
@@ -100,15 +115,11 @@ func (s Scanner) FileState() State {
 
 	// Scan for key
 	key := s.getKey(r)
-	s.Emit(Token{
-		Name:  TokenNameKey,
-		Value: string(key),
-	})
 
 	if string(key) == "service" {
 		val := s.getVal()
 		s.Emit(Token{
-			Name:  TokenNameVal,
+			Name:  TokenServiceKey,
 			Value: string(val),
 		})
 
@@ -118,7 +129,7 @@ func (s Scanner) FileState() State {
 	if string(key) == "message" {
 		val := s.getVal()
 		s.Emit(Token{
-			Name:  TokenNameMessage,
+			Name:  TokenMessageKey,
 			Value: string(val),
 		})
 
@@ -129,15 +140,27 @@ func (s Scanner) FileState() State {
 	if string(key) == "option" {
 		option := s.getSingleOption()
 		s.Emit(Token{
-			Name:  TokenNameOption,
+			Name:  TokenFileOptionKey,
 			Value: string(option),
 		})
+
+		val := s.getVal()
+		s.Emit(Token{
+			Name:  TokenFileOptionVal,
+			Value: string(val),
+		})
+		return s.FileState
 	}
+
+	s.Emit(Token{
+		Name:  TokenFileKey,
+		Value: string(key),
+	})
 
 	// Scan for val
 	val := s.getVal()
 	s.Emit(Token{
-		Name:  TokenNameVal,
+		Name:  TokenFileVal,
 		Value: string(val),
 	})
 
@@ -148,7 +171,7 @@ func (s Scanner) ServiceState() State {
 	r := s.read()
 
 	for !isLetter(r) {
-		if r == eof {
+		if isEOF(r) {
 			return nil
 		}
 
@@ -159,33 +182,27 @@ func (s Scanner) ServiceState() State {
 		r = s.read()
 	}
 
-	// Check for service options
 	key := s.getKey(r)
-	s.Emit(Token{
-		Name:  TokenNameKey,
-		Value: string(key),
-	})
 
 	if string(key) == "rpc" {
 		s.getRPCVals()
 		return s.RPCState
 	}
 
-	// Scan for option
 	if string(key) == "option" {
 		option := s.getSingleOption()
 		s.Emit(Token{
-			Name:  TokenNameOption,
+			Name:  TokenServiceOptionKey,
 			Value: string(option),
 		})
-	}
 
-	// Scan for val
-	val := s.getVal()
-	s.Emit(Token{
-		Name:  TokenNameVal,
-		Value: string(val),
-	})
+		val := s.getVal()
+		s.Emit(Token{
+			Name:  TokenServiceOptionVal,
+			Value: string(val),
+		})
+		return s.ServiceState
+	}
 
 	return s.ServiceState
 }
@@ -194,7 +211,7 @@ func (s Scanner) RPCState() State {
 	r := s.read()
 
 	for !isLetter(r) {
-		if r == eof {
+		if isEOF(r) {
 			return nil
 		}
 
@@ -205,39 +222,156 @@ func (s Scanner) RPCState() State {
 		r = s.read()
 	}
 
-	// Check for service options
 	key := s.getKey(r)
-	s.Emit(Token{
-		Name:  TokenNameKey,
-		Value: string(key),
-	})
 
-	// Scan for option
 	if string(key) == "option" {
 		option := s.getSingleOption()
 		s.Emit(Token{
-			Name:  TokenNameOption,
+			Name:  TokenRPCOptionKey,
 			Value: string(option),
 		})
-	}
 
-	// Scan for val
-	val := s.getVal()
-	s.Emit(Token{
-		Name:  TokenNameVal,
-		Value: string(val),
-	})
+		val := s.getVal()
+		s.Emit(Token{
+			Name:  TokenRPCOptionVal,
+			Value: string(val),
+		})
+	}
 
 	return s.RPCState
 }
 
 func (s Scanner) MessageState() State {
 	r := s.read()
-	if r == eof {
-		return nil
+
+	for !isLetter(r) {
+		if isEOF(r) {
+			return nil
+		}
+
+		if isCloseCurleyBrace(r) {
+			return s.FileState
+		}
+
+		r = s.read()
 	}
 
-	return nil
+	dataType := s.getFieldDataType(r)
+	s.Emit(Token{
+		Name:  TokenMessageFieldDataType,
+		Value: string(dataType),
+	})
+
+	key := s.getFieldKey()
+	s.Emit(Token{
+		Name:  TokenMessageFieldKey,
+		Value: string(key),
+	})
+
+	// Scan until the options begin or end of field
+	for {
+		r := s.read()
+
+		if isEOF(r) {
+			return nil
+		}
+
+		if isSemicolon(r) {
+			break
+		}
+
+		if isOpenSquareBracket(r) {
+			return s.FieldOptionsState
+		}
+	}
+
+	return s.MessageState
+}
+
+func (s Scanner) FieldOptionsState() State {
+	// Scan until we get to option key
+	for {
+		r := s.read()
+
+		if isEOF(r) {
+			return nil
+		}
+
+		if isSemicolon(r) || isCloseSquareBracket(r) {
+			return s.MessageState
+		}
+
+		if isOpenParen(r) {
+			break
+		}
+	}
+
+	fieldOptionKey := []rune{}
+	for {
+		r := s.read()
+
+		if isEOF(r) {
+			return nil
+		}
+
+		if isCloseParen(r) {
+			break
+		}
+
+		if isWhitespace(r) {
+			continue
+		}
+
+		fieldOptionKey = append(fieldOptionKey, r)
+	}
+
+	s.Emit(Token{
+		Name:  TokenMessageFieldOptionKey,
+		Value: string(fieldOptionKey),
+	})
+
+	// Scan until we get to option val
+	for {
+		r := s.read()
+
+		if isEOF(r) {
+			return nil
+		}
+
+		if isCloseSquareBracket(r) || isSemicolon(r) {
+			return s.MessageState
+		}
+
+		if isDoubleQuote(r) {
+			break
+		}
+
+		if isWhitespace(r) {
+			continue
+		}
+	}
+
+	fieldOptionVal := []rune{}
+	for {
+		r := s.read()
+
+		if isEOF(r) {
+			return nil
+		}
+
+		if isDoubleQuote(r) || isCloseSquareBracket(r) || isSemicolon(r) {
+			break
+		}
+
+		fieldOptionVal = append(fieldOptionVal, r)
+	}
+
+	s.Emit(Token{
+		Name:  TokenMessageFieldOptionVal,
+		Value: string(fieldOptionVal),
+	})
+
+	return s.FieldOptionsState
 }
 
 func (s Scanner) getKey(runes ...rune) (key []rune) {
@@ -248,11 +382,11 @@ func (s Scanner) getKey(runes ...rune) (key []rune) {
 	for {
 		r := s.read()
 
-		if r == eof || isEqual(r) || isWhitespace(r) {
+		if isEOF(r) || isEqual(r) || isWhitespace(r) {
 			break
 		}
 
-		if isDoubleQuote(r) {
+		if isDoubleQuote(r) || isCloseCurleyBrace(r) {
 			s.unread()
 			break
 		}
@@ -266,7 +400,7 @@ func (s Scanner) getSingleOption() (option []rune) {
 	for {
 		r := s.read()
 
-		if r == eof || isCloseParen(r) {
+		if isEOF(r) || isCloseParen(r) {
 			break
 		}
 
@@ -296,7 +430,7 @@ func (s Scanner) getVal(runes ...rune) (val []rune) {
 			continue
 		}
 
-		if r == eof || isSemicolon(r) || isOpenCurleyBrace(r) {
+		if isEOF(r) || isSemicolon(r) || isOpenCurleyBrace(r) {
 			break
 		}
 
@@ -305,11 +439,49 @@ func (s Scanner) getVal(runes ...rune) (val []rune) {
 	return
 }
 
+func (s Scanner) getFieldDataType(runes ...rune) (dataType []rune) {
+	for _, r := range runes {
+		dataType = append(dataType, r)
+	}
+
+	for {
+		r := s.read()
+
+		if isEOF(r) || isWhitespace(r) {
+			break
+		}
+
+		dataType = append(dataType, r)
+	}
+	return
+}
+
+func (s Scanner) getFieldKey(runes ...rune) (key []rune) {
+	for _, r := range runes {
+		key = append(key, r)
+	}
+
+	for {
+		r := s.read()
+
+		if isWhitespace(r) {
+			continue
+		}
+
+		if isEOF(r) || isSemicolon(r) || isEqual(r) {
+			break
+		}
+
+		key = append(key, r)
+	}
+	return
+}
+
 func (s Scanner) scanLiteral() (literal []rune) {
 	for {
 		r := s.read()
 
-		if r == eof || isDoubleQuote(r) || isBacktick(r) {
+		if isEOF(r) || isDoubleQuote(r) || isBacktick(r) {
 			break
 		}
 
@@ -338,7 +510,7 @@ func (s Scanner) getRPCVals() {
 	}
 
 	s.Emit(Token{
-		Name:  TokenNameRPCName,
+		Name:  TokenRPCName,
 		Value: string(rpcName),
 	})
 
@@ -359,7 +531,7 @@ func (s Scanner) getRPCVals() {
 	}
 
 	s.Emit(Token{
-		Name:  TokenNameRPCIn,
+		Name:  TokenRPCIn,
 		Value: string(rpcIn),
 	})
 
@@ -389,7 +561,7 @@ func (s Scanner) getRPCVals() {
 	}
 
 	s.Emit(Token{
-		Name:  TokenNameRPCOut,
+		Name:  TokenRPCOut,
 		Value: string(rpcOut),
 	})
 }
@@ -448,4 +620,16 @@ func isCloseCurleyBrace(r rune) bool {
 
 func isEOF(r rune) bool {
 	return r == eof
+}
+
+func isOpenSquareBracket(r rune) bool {
+	return r == '['
+}
+
+func isCloseSquareBracket(r rune) bool {
+	return r == ']'
+}
+
+func isComma(r rune) bool {
+	return r == ','
 }

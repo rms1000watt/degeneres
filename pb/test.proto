@@ -22,12 +22,14 @@ service BallparkAPI {
         option (dg.method) = "GET";
         option (dg.method) = "POST";
     }
+
+    rpc Management(ManagementIn) returns (ManagementOut) {}
 }
 
 message PersonIn {
     int64 id          = 1;
     string first_name = 2 [(dg.validate) = "maxLength=100", (dg.transform) = "truncate=50"];
-    string last_name  = 3 [(dg.validate) = "maxLength=1000", (dg.transform) = "truncate=50"];
+    string last_name  = 3 [(dg.validate) = "maxLength=1000,required,minLength=1", (dg.transform) = "truncate=50,hash"];
 }
 
 message PersonOut {
@@ -43,4 +45,12 @@ message TicketIn {
 message TicketOut {
     string row  = 1;
     string seat = 2;
+}
+
+message ManagementIn {
+    bool power = 1;
+}
+
+message ManagementOut {
+    bool success = 1;
 }
