@@ -10,17 +10,18 @@ option (dg.author) = "Ryan Smith";
 
 service BallparkAPI {
     option (dg.middleware.cors) = "localhost,127.0.0.1,www.example.com";
+    option (dg.middleware.no_cache) = true;
 
     rpc Person(PersonIn) returns (PersonOut) {
-        option (dg.middleware.no_cache) = true;
+        option (dg.middleware.no_cache) = false;
         option (dg.method) = "GET";
         option (dg.method) = "POST";
     }
 
     rpc Ticket(TicketIn) returns (TicketOut) {
-        option (dg.middleware.no_cache) = true;
         option (dg.method) = "GET";
         option (dg.method) = "POST";
+        option (dg.method) = "PUT";
     }
 
     rpc Management(ManagementIn) returns (ManagementOut) {}
@@ -36,6 +37,7 @@ message PersonOut {
     string first_name       = 1;
     string last_name        = 2;
     address.Address address = 3;
+    Profile profile         = 4;
 }
 
 message TicketIn {
@@ -53,4 +55,9 @@ message ManagementIn {
 
 message ManagementOut {
     bool success = 1;
+}
+
+message Profile {
+    string email    = 1 [(dg.transform) = "hash"];
+    string username = 2;
 }

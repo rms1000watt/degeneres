@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package postal;
+
+message Postal {
+    string code      = 1;
+    string region    = 2;
+    string utilities = 3;
+}

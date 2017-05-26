@@ -3,64 +3,25 @@ package generate
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 )
-
-const (
-	TokenFileOption            = "fileOption"
-	TokenFileKey               = "fileKey"
-	TokenFileVal               = "fileVal"
-	TokenMessage               = "message"
-	TokenRPCName               = "rpcName"
-	TokenRPCIn                 = "rpcIn"
-	TokenRPCOut                = "rpcOut"
-	TokenFileOptionKey         = "fileOptionKey"
-	TokenFileOptionVal         = "fileOptionVal"
-	TokenServiceKey            = "serviceKey"
-	TokenServiceOptionKey      = "serviceOptionKey"
-	TokenServiceOptionVal      = "serviceOptionVal"
-	TokenRPCOptionKey          = "rpcOptionKey"
-	TokenRPCOptionVal          = "rpcOptionVal"
-	TokenMessageKey            = "messageKey"
-	TokenMessageFieldDataType  = "messageFieldDataType"
-	TokenMessageFieldKey       = "messageFieldKey"
-	TokenMessageFieldOptionKey = "messageFieldOptionKey"
-	TokenMessageFieldOptionVal = "messageFieldOptionVal"
-)
-
-func Scan(filepath string) (out string, err error) {
-	fmt.Println("Starting Scan...")
-
-	fileBytes, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		fmt.Errorf("Failed reading file: %s: %s", filepath, err)
-		return
-	}
-	dgTokens := make(chan Token)
-
-	s := NewScanner(fileBytes, dgTokens, "dg")
-	go s.Start()
-
-	for token := range dgTokens {
-		fmt.Println(token)
-	}
-
-	return
-}
 
 type State func() State
-
-type Token struct {
-	Name      string
-	Value     string
-	Namespace string
-}
 
 type Scanner struct {
 	State     State
 	TokenCh   chan Token
 	InputBuf  *bytes.Buffer
 	Namespace string
+}
+
+func Scan(fileBytes []byte) (tokens chan Token) {
+	fmt.Println("Starting Scan...")
+
+	dgTokens := make(chan Token)
+	s := NewScanner(fileBytes, dgTokens, "dg")
+	go s.Start()
+
+	return dgTokens
 }
 
 var eof = rune(0)
@@ -89,7 +50,9 @@ func (s Scanner) Emit(token Token) {
 func (s Scanner) read() rune {
 	r, _, err := s.InputBuf.ReadRune()
 	if err != nil {
-		fmt.Println("Failed reading rune:", err)
+		if err.Error() != "EOF" {
+			fmt.Println("Failed reading rune:", err)
+		}
 		return eof
 	}
 	return r
@@ -176,6 +139,7 @@ func (s Scanner) ServiceState() State {
 		}
 
 		if isCloseCurleyBrace(r) {
+			s.Emit(Token{Name: TokenServiceDone})
 			return s.FileState
 		}
 
@@ -216,6 +180,7 @@ func (s Scanner) RPCState() State {
 		}
 
 		if isCloseCurleyBrace(r) {
+			s.Emit(Token{Name: TokenRPCDone})
 			return s.ServiceState
 		}
 
@@ -250,6 +215,7 @@ func (s Scanner) MessageState() State {
 		}
 
 		if isCloseCurleyBrace(r) {
+			s.Emit(Token{Name: TokenMessageDone})
 			return s.FileState
 		}
 
@@ -258,13 +224,13 @@ func (s Scanner) MessageState() State {
 
 	dataType := s.getFieldDataType(r)
 	s.Emit(Token{
-		Name:  TokenMessageFieldDataType,
+		Name:  TokenFieldDataType,
 		Value: string(dataType),
 	})
 
 	key := s.getFieldKey()
 	s.Emit(Token{
-		Name:  TokenMessageFieldKey,
+		Name:  TokenFieldKey,
 		Value: string(key),
 	})
 
@@ -277,6 +243,7 @@ func (s Scanner) MessageState() State {
 		}
 
 		if isSemicolon(r) {
+			s.Emit(Token{Name: TokenFieldDone})
 			break
 		}
 
@@ -298,6 +265,7 @@ func (s Scanner) FieldOptionsState() State {
 		}
 
 		if isSemicolon(r) || isCloseSquareBracket(r) {
+			s.Emit(Token{Name: TokenFieldDone})
 			return s.MessageState
 		}
 
@@ -326,7 +294,7 @@ func (s Scanner) FieldOptionsState() State {
 	}
 
 	s.Emit(Token{
-		Name:  TokenMessageFieldOptionKey,
+		Name:  TokenFieldOptionKey,
 		Value: string(fieldOptionKey),
 	})
 
@@ -367,7 +335,7 @@ func (s Scanner) FieldOptionsState() State {
 	}
 
 	s.Emit(Token{
-		Name:  TokenMessageFieldOptionVal,
+		Name:  TokenFieldOptionVal,
 		Value: string(fieldOptionVal),
 	})
 

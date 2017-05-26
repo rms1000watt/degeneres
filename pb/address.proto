@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package address;
 
+import "github.com/rms1000watt/degeneres/pb/postal.proto";
+
 message Address {
-    string address_1 = 1;
-    string address_2 = 2;
-    string city      = 3;
-    string state     = 4;
-    string zip       = 5;
+    string address_1     = 1;
+    string address_2     = 2;
+    string city          = 3;
+    string state         = 4;
+    postal.Postal postal = 5;
+
 }

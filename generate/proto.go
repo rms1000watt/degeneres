@@ -1,13 +1,23 @@
 package generate
 
+const (
+	FileSyntax  = "syntax"
+	FilePackage = "package"
+	FileImport  = "import"
+)
+
+func NewProto() (proto Proto) {
+	return Proto{}
+}
+
 // FileState
 type Proto struct {
-	Syntax   string    // FileSyntaxState
-	Package  string    // FilePackageState
-	Imports  []string  // FileImportsState
-	Options  []Option  // FileOptionsState
-	Services []Service // FileServicesState
-	Messages []Message // FileMessagesState
+	Syntax   string
+	Package  string
+	Imports  []string
+	Options  []Option
+	Services []Service
+	Messages []Message
 }
 
 type Option struct {
@@ -16,8 +26,9 @@ type Option struct {
 }
 
 type Service struct {
-	Name string
-	RPCs []RPC
+	Name    string
+	Options []Option
+	RPCs    []RPC
 }
 
 type RPC struct {
@@ -28,14 +39,18 @@ type RPC struct {
 }
 
 type Message struct {
-	Name    string
-	Options []Option
-	Fields  []Field
+	Name   string
+	Fields []Field
 }
 
 type Field struct {
 	Name     string
-	Type     string
+	DataType string
 	Position string
 	Options  []Option
+}
+
+type KV struct {
+	Key string
+	Val string
 }
