@@ -5,32 +5,30 @@ import (
 	"fmt"
 )
 
+var eof = rune(0)
+
 type State func() State
 
 type Scanner struct {
-	State     State
-	TokenCh   chan Token
-	InputBuf  *bytes.Buffer
-	Namespace string
+	State    State
+	TokenCh  chan Token
+	InputBuf *bytes.Buffer
 }
 
 func Scan(fileBytes []byte) (tokens chan Token) {
 	fmt.Println("Starting Scan...")
 
-	dgTokens := make(chan Token)
-	s := NewScanner(fileBytes, dgTokens, "dg")
+	tokens = make(chan Token)
+	s := NewScanner(fileBytes, tokens)
 	go s.Start()
 
-	return dgTokens
+	return
 }
 
-var eof = rune(0)
-
-func NewScanner(inputBytes []byte, tokenCh chan Token, namespace string) Scanner {
+func NewScanner(inputBytes []byte, tokenCh chan Token) Scanner {
 	return Scanner{
-		InputBuf:  bytes.NewBuffer(inputBytes),
-		TokenCh:   tokenCh,
-		Namespace: namespace,
+		InputBuf: bytes.NewBuffer(inputBytes),
+		TokenCh:  tokenCh,
 	}
 }
 
@@ -43,7 +41,6 @@ func (s Scanner) Start() {
 }
 
 func (s Scanner) Emit(token Token) {
-	token.Namespace = s.Namespace
 	s.TokenCh <- token
 }
 

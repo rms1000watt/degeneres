@@ -25,7 +25,6 @@ const (
 )
 
 type Token struct {
-	Name      string
-	Value     string
-	Namespace string
+	Name  string
+	Value string
 }

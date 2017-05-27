@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"encoding/json"
 	"fmt"
 	"go/build"
 	"io/ioutil"
@@ -14,13 +15,16 @@ var (
 func Generate(cfg Config) {
 	fmt.Println("Starting Generation...")
 
-	_, err := UnmarshalFile(cfg.ProtoFilePath)
+	proto, err := UnmarshalFile(cfg.ProtoFilePath)
 	if err != nil {
 		fmt.Errorf("Failed scanning protofile: %s", err)
 		return
 	}
 
-	// fmt.Println(proto)
+	NewTemplate(proto)
+
+	bytes, _ := json.MarshalIndent(proto, "", "  ")
+	fmt.Println(string(bytes))
 }
 
 func UnmarshalFile(filePath string) (proto Proto, err error) {
@@ -35,6 +39,7 @@ func UnmarshalFile(filePath string) (proto Proto, err error) {
 	tokens := Scan(fileBytes)
 	proto = Parse(tokens)
 
+	importedProtos := []Proto{}
 	for _, importFilepath := range proto.Imports {
 		cnt++
 		if cnt > 100 {
@@ -42,19 +47,18 @@ func UnmarshalFile(filePath string) (proto Proto, err error) {
 			break
 		}
 		filePath := filepath.Join(build.Default.GOPATH, "src", importFilepath)
-		out, err := UnmarshalFile(filePath)
+		importedProto, err := UnmarshalFile(filePath)
 		if err != nil {
-			fmt.Println("Failed unmarshalling file")
+			fmt.Println("Failed unmarshalling file:", err)
 			break
 		}
 
-		Merge(&proto, out)
+		importedProtos = append(importedProtos, importedProto)
 	}
 
-	fmt.Println("Merged:", proto)
-	return
-}
+	if err := Merge(&proto, importedProtos...); err != nil {
+		return proto, err
+	}
 
-func Merge(protoP *Proto, proto Proto) {
-	// todo
+	return
 }

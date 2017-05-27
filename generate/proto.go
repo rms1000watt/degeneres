@@ -10,7 +10,6 @@ func NewProto() (proto Proto) {
 	return Proto{}
 }
 
-// FileState
 type Proto struct {
 	Syntax   string
 	Package  string
@@ -39,8 +38,9 @@ type RPC struct {
 }
 
 type Message struct {
-	Name   string
-	Fields []Field
+	Name     string
+	Fields   []Field
+	Imported bool
 }
 
 type Field struct {
