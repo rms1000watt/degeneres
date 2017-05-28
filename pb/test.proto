@@ -4,9 +4,14 @@ package pb;
 
 import "github.com/rms1000watt/degeneres/pb/address.proto";
 
-option (dg.rpc_to_endpoints) = true;
-option (dg.project_name) = "DegeneresTest";
+option (dg.version) = "v0.1.0";
 option (dg.author) = "Ryan Smith";
+option (dg.project_name) = "Degeneres Test";
+option (dg.import_path) = "github.com/rms1000watt/degeneres-test";
+
+option (dg.certs_path) = "./certs";
+option (dg.public_key_name) = "server.cer";
+option (dg.private_key_name) = "server.key";
 
 service BallparkAPI {
     option (dg.middleware.cors) = "localhost,127.0.0.1,www.example.com";

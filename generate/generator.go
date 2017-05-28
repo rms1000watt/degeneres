@@ -1,7 +1,6 @@
 package generate
 
 import (
-	"encoding/json"
 	"fmt"
 	"go/build"
 	"io/ioutil"
@@ -21,10 +20,16 @@ func Generate(cfg Config) {
 		return
 	}
 
-	NewTemplate(proto)
+	dg, err := NewDegeneres(proto)
+	if err != nil {
+		fmt.Println("Failed converting to degeneres format:", err)
+		return
+	}
 
-	bytes, _ := json.MarshalIndent(proto, "", "  ")
-	fmt.Println(string(bytes))
+	_ = dg
+
+	// bytes, _ := json.MarshalIndent(proto, "", "  ")
+	// fmt.Println(string(bytes))
 }
 
 func UnmarshalFile(filePath string) (proto Proto, err error) {

@@ -2,7 +2,6 @@ package generate
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 )
 
@@ -35,7 +34,6 @@ func Merge(proto *Proto, importedProtos ...Proto) (err error) {
 		importedProtosMap[importedProto.Package] = importedProto
 	}
 
-	fmt.Println(len(proto.Messages))
 	for _, importField := range importFields {
 		fieldSplit := strings.Split(importField, ".")
 		if len(fieldSplit) == 0 {

@@ -1,6 +1,6 @@
 ## Degeneres
 
-Degeneres, the Golang Code generator. Use a Protobuf definition to generate complete microservices.
+Degeneres, the Golang Code generator. Use Protobuf definitions to generate complete microservices.
 
 ```proto
 syntax = "proto3";
