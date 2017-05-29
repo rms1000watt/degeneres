@@ -25,6 +25,7 @@ type Degeneres struct {
 	ImportPath       string `validate:"required"`
 	Author           string `validate:"required"`
 	ProjectName      string `validate:"required"`
+	ProjectFolder    string
 	ShortDescription string
 	LongDescription  string
 	CertsPath        string
@@ -104,6 +105,9 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			dg.Version = option.Value
 		}
 	}
+
+	splitPath := strings.Split(dg.ImportPath, "/")
+	dg.ProjectFolder = splitPath[len(splitPath)-1]
 
 	services := []DgService{}
 	for _, service := range proto.Services {
