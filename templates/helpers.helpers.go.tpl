@@ -1,6 +1,5 @@
-package {{.CommandLine.Command.Name}}
+package helpers
 
-{{if .CommandLine.Command.API}}
 import (
 	"crypto/rand"
 	"reflect"
@@ -149,5 +148,3 @@ func dereferenceBoolArray(in []*bool) (out []bool) {
 	}
 	return
 }
-
-{{end}}

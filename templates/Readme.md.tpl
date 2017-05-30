@@ -1,11 +1,11 @@
-## {{.CommandLine.AppName}}
+## {{.ProjectName}}
 
-Description for {{.CommandLine.AppName}} goes here.
+Description for {{.ProjectName}} goes here.
 
 ### Installation
 
 ```sh
-go get -u -v {{.MainImportPath}}
+go get -u -v {{.ImportPath}}
 ```
 
 ### Usage

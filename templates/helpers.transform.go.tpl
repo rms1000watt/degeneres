@@ -1,6 +1,5 @@
-package {{.CommandLine.Command.Name}}
+package helpers
 
-{{if .CommandLine.Command.API}}
 import (
 	"crypto/aes"
 	"crypto/cipher"
@@ -192,4 +191,3 @@ func PasswordHashReflectValue(value reflect.Value) (err error) {
 	value.SetString(hex.EncodeToString(key))
 	return
 }
-{{end}}

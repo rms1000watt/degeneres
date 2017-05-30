@@ -6,39 +6,54 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 const (
-	OptionVersion          = "version"
-	OptionImportPath       = "import_path"
-	OptionAuthor           = "author"
-	OptionProjectName      = "project_name"
-	OptionShortDescription = "short_description"
-	OptionLongDescription  = "long_description"
-	OptionCertsPath        = "certs_path"
-	OptionPublicKeyName    = "public_key_name"
-	OptionPrivateKeyName   = "private_key_name"
+	OptionVersion              = "version"
+	OptionImportPath           = "import_path"
+	OptionAuthor               = "author"
+	OptionProjectName          = "project_name"
+	OptionShortDescription     = "short_description"
+	OptionLongDescription      = "long_description"
+	OptionCertsPath            = "certs_path"
+	OptionPublicKeyName        = "public_key_name"
+	OptionPrivateKeyName       = "private_key_name"
+	OptionDockerPath           = "docker_path"
+	OptionProjectNameCommander = "project_name_commander"
+	OptionTransform            = "transform"
+	OptionValidate             = "validate"
 )
 
 type Degeneres struct {
-	Version          string `validate:"required"`
-	ImportPath       string `validate:"required"`
-	Author           string `validate:"required"`
-	ProjectName      string `validate:"required"`
-	ProjectFolder    string
-	ShortDescription string
-	LongDescription  string
-	CertsPath        string
-	PublicKeyName    string
-	PrivateKeyName   string
-	Services         []DgService // Commands.. go run main.go $SERVICE_NAME
+	Version              string `validate:"required"`
+	ImportPath           string `validate:"required"`
+	DockerPath           string
+	Author               string `validate:"required"`
+	ProjectName          string `validate:"required"`
+	ProjectNameCommander string
+	ProjectFolder        string
+	ShortDescription     string
+	LongDescription      string
+	CertsPath            string
+	PublicKeyName        string
+	PrivateKeyName       string
+	Services             []DgService // Commands.. go run main.go $SERVICE_NAME
 }
 
 type DgService struct {
 	Name
-	Middlewares map[string]DgMiddleware
-	Endpoints   []DgEndpoint
-	Messages    []DgMessage
+	ShortDescription string
+	LongDescription  string
+	Middlewares      map[string]DgMiddleware
+	Endpoints        []DgEndpoint
+	Messages         []DgMessage
+
+	CertsPath      string
+	ImportPath     string
+	PublicKeyName  string
+	PrivateKeyName string
 }
 
 type DgMiddleware struct {
@@ -56,19 +71,22 @@ type DgEndpoint struct {
 
 type DgMessage struct {
 	Name
-	Fields []DgField
+	Fields  []DgField
+	IsInput bool
 }
 
 type DgField struct {
 	Name
-	DataType string
-	Options  []Option
+	DataType  string // Process all of these to include pointers if it's an input
+	Transform string // Parse from Options
+	Validate  string // Parse from Options
 }
 
 type Name struct {
 	Raw        string
-	SnakeCase  string
-	CamelCase  string
+	Dash       string
+	Snake      string
+	Camel      string
 	Lower      string
 	LowerSnake string
 	LowerCamel string
@@ -91,29 +109,66 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			dg.CertsPath = option.Value
 		case OptionImportPath:
 			dg.ImportPath = option.Value
+			splitPath := strings.Split(dg.ImportPath, "/")
+			dg.ProjectFolder = splitPath[len(splitPath)-1]
 		case OptionLongDescription:
 			dg.LongDescription = option.Value
 		case OptionShortDescription:
 			dg.ShortDescription = option.Value
 		case OptionPrivateKeyName:
+			if option.Value == "" {
+				dg.PrivateKeyName = "server.key"
+				continue
+			}
 			dg.PrivateKeyName = option.Value
 		case OptionPublicKeyName:
+			if option.Value == "" {
+				dg.PublicKeyName = "server.cer"
+				continue
+			}
 			dg.PublicKeyName = option.Value
 		case OptionProjectName:
 			dg.ProjectName = option.Value
+			dg.ProjectNameCommander = ToDashCase(option.Value)
 		case OptionVersion:
 			dg.Version = option.Value
+		case OptionDockerPath:
+			dg.DockerPath = option.Value
 		}
 	}
 
-	splitPath := strings.Split(dg.ImportPath, "/")
-	dg.ProjectFolder = splitPath[len(splitPath)-1]
+	messages := []DgMessage{}
+	for _, protoMessage := range proto.Messages {
+		fields := []DgField{}
+		for _, protoField := range protoMessage.Fields {
+			fields = append(fields, DgField{
+				Name:      genName(protoField.Name),
+				DataType:  fixDataType(protoField.DataType, false),
+				Transform: getTransformFromOptions(protoField.Options),
+				Validate:  getValidateFromOptions(protoField.Options),
+			})
+
+		}
+
+		messages = append(messages, DgMessage{
+			Name:   genName(protoMessage.Name),
+			Fields: fields,
+		})
+	}
 
 	services := []DgService{}
 	for _, service := range proto.Services {
+		spew.Dump(genName(service.Name))
+
 		// endpoints := []DgEndpoint{}
+
 		services = append(services, DgService{
-			Name: genName(service.Name),
+			Name:           genName(service.Name),
+			CertsPath:      dg.CertsPath,
+			ImportPath:     dg.ImportPath,
+			PublicKeyName:  dg.PublicKeyName,
+			PrivateKeyName: dg.PrivateKeyName,
+			Messages:       messages,
 		})
 	}
 	dg.Services = services
@@ -135,21 +190,58 @@ func fixOptionName(in string) (out string) {
 func genName(in string) Name {
 	camel := ToCamelCase(in)
 	snake := ToSnakeCase(in)
+	dash := ToDashCase(in)
 
 	return Name{
 		Raw:        in,
-		CamelCase:  camel,
-		SnakeCase:  snake,
+		Dash:       dash,
+		Camel:      camel,
+		Snake:      snake,
 		Lower:      strings.ToLower(in),
 		LowerSnake: strings.ToLower(snake),
 		LowerCamel: strings.ToLower(camel),
 		Upper:      strings.ToUpper(in),
 		UpperSnake: strings.ToUpper(snake),
 		UpperCamel: strings.ToUpper(camel),
-		Title:      strings.ToTitle(in),
-		TitleSnake: strings.ToTitle(snake),
-		TitleCamel: strings.ToTitle(camel),
+		Title:      strings.Title(in),
+		TitleSnake: strings.Title(snake),
+		TitleCamel: strings.Title(camel),
 	}
+}
+
+func getTransformFromOptions(options []Option) string {
+	for _, option := range options {
+		optionName := strings.ToLower(fixOptionName(option.Name))
+		if optionName == OptionTransform {
+			return option.Value
+		}
+	}
+	return ""
+}
+
+func getValidateFromOptions(options []Option) string {
+	for _, option := range options {
+		optionName := strings.ToLower(fixOptionName(option.Name))
+		if optionName == OptionValidate {
+			return option.Value
+		}
+	}
+	return ""
+}
+
+func fixDataType(dataType string, isInput bool) string {
+	splitDT := strings.Split(dataType, ".")
+	if len(splitDT) > 1 {
+		dataType = splitDT[len(splitDT)-1]
+	}
+
+	if isInput {
+		if len(dataType) > 2 && dataType[:2] == "[]" {
+			return "[]*" + dataType[2:]
+		}
+		return "*" + dataType
+	}
+	return dataType
 }
 
 // Courtesy of https://github.com/etgryphon/stringUp/blob/master/stringUp.go
@@ -207,10 +299,20 @@ func ToSnakeCase(src string) (out string) {
 	}
 	// construct []string from results
 	for _, s := range runes {
-		if len(s) > 0 {
+		if len(s) > 0 && !strings.Contains(string(s), " ") {
 			entries = append(entries, string(s))
 		}
 	}
 
-	return strings.ToLower(strings.Join(entries, "_"))
+	out = strings.ToLower(strings.Join(entries, "_"))
+
+	for strings.Contains(out, "__") {
+		out = strings.Replace(out, "__", "_", -1)
+	}
+
+	return out
+}
+
+func ToDashCase(in string) (out string) {
+	return strings.Replace(ToSnakeCase(in), "_", "-", -1)
 }

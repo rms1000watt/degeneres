@@ -1,6 +1,5 @@
-package {{.CommandLine.Command.Name}}
+package helpers
 
-{{if .CommandLine.Command.API}}
 import (
 	"fmt"
 	"reflect"
@@ -133,4 +132,3 @@ func ValidateFloat64(param string, in float64) (msg string) {
 
 	return
 }
-{{end}}

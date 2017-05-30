@@ -54,8 +54,6 @@ func Generate(cfg Config) {
 		return
 	}
 
-	_ = dg
-
 	if err := os.Mkdir(dirOut, os.ModePerm); err != nil {
 		fmt.Printf("Directory: \"%s\" already exists. Continuing...\n", dirOut)
 	}
@@ -72,9 +70,6 @@ func Generate(cfg Config) {
 			fmt.Println("Failed generating template:", tpl.TemplateName, ":", err)
 		}
 	}
-
-	// bytes, _ := json.MarshalIndent(proto, "", "  ")
-	// fmt.Println(string(bytes))
 }
 
 func UnmarshalFile(filePath string) (proto Proto, err error) {
@@ -133,6 +128,11 @@ func getTemplates(dg Degeneres) (templates []Template) {
 		"Readme.md.tpl",
 		"License..tpl",
 		"Dockerfile..tpl",
+		"helpers.middlewares.go.tpl",
+		"helpers.helpers.go.tpl",
+		"helpers.unmarshal.go.tpl",
+		"helpers.validate.go.tpl",
+		"helpers.transform.go.tpl",
 	}
 
 	for _, singleTemplateName := range singleTemplateNames {
@@ -144,7 +144,7 @@ func getTemplates(dg Degeneres) (templates []Template) {
 	}
 
 	for _, service := range dg.Services {
-		lowerKey := service.CamelCase
+		lowerKey := service.Camel
 		// templateCfg := yamlToTemplateCfg(cfg, key)
 
 		templates = append(templates, Template{
@@ -152,53 +152,28 @@ func getTemplates(dg Degeneres) (templates []Template) {
 			FileName:     "cmd.command.go.tpl",
 			Data:         service,
 		})
-		// templates = append(templates, Template{
-		// 	TemplateName: lowerKey + "." + lowerKey + ".go.tpl",
-		// 	FileName:     "command.command.go.tpl",
-		// 	Data:         templateCfg,
-		// })
-		// templates = append(templates, Template{
-		// 	TemplateName: lowerKey + ".config.go.tpl",
-		// 	FileName:     "command.config.go.tpl",
-		// 	Data:         templateCfg,
-		// })
-		// templates = append(templates, Template{
-		// 	TemplateName: lowerKey + ".middlewares.go.tpl",
-		// 	FileName:     "command.middlewares.go.tpl",
-		// 	Data:         templateCfg,
-		// })
-		// templates = append(templates, Template{
-		// 	TemplateName: lowerKey + ".helpers.go.tpl",
-		// 	FileName:     "command.helpers.go.tpl",
-		// 	Data:         templateCfg,
-		// })
-		// templates = append(templates, Template{
-		// 	TemplateName: lowerKey + ".unmarshal.go.tpl",
-		// 	FileName:     "command.unmarshal.go.tpl",
-		// 	Data:         templateCfg,
-		// })
-		// templates = append(templates, Template{
-		// 	TemplateName: lowerKey + ".validate.go.tpl",
-		// 	FileName:     "command.validate.go.tpl",
-		// 	Data:         templateCfg,
-		// })
-		// templates = append(templates, Template{
-		// 	TemplateName: lowerKey + ".transform.go.tpl",
-		// 	FileName:     "command.transform.go.tpl",
-		// 	Data:         templateCfg,
-		// })
-		// templates = append(templates, Template{
-		// 	TemplateName: lowerKey + ".data.go.tpl",
-		// 	FileName:     "command.data.go.tpl",
-		// 	Data:         templateCfg,
-		// })
+		templates = append(templates, Template{
+			TemplateName: lowerKey + "." + lowerKey + ".go.tpl",
+			FileName:     "command.command.go.tpl",
+			Data:         service,
+		})
+		templates = append(templates, Template{
+			TemplateName: lowerKey + ".config.go.tpl",
+			FileName:     "command.config.go.tpl",
+			Data:         service,
+		})
+		templates = append(templates, Template{
+			TemplateName: lowerKey + ".data.go.tpl",
+			FileName:     "command.data.go.tpl",
+			Data:         service,
+		})
 
 		for _, endpoint := range service.Endpoints {
 			// ephemeralCfg := templateCfg
 			// ephemeralCfg.API.Paths = []TemplatePath{apiPath}
 
 			templates = append(templates, Template{
-				TemplateName: fmt.Sprintf("%s.%sHandler.go.tpl", lowerKey, endpoint.CamelCase),
+				TemplateName: fmt.Sprintf("%s.%sHandler.go.tpl", lowerKey, endpoint.Camel),
 				FileName:     "command.handler.go.tpl",
 				Data:         endpoint,
 			})
@@ -285,4 +260,21 @@ func genFile(tpl Template, helperFileNames []string) (err error) {
 	RemoveUnusedFile(completeFilePath)
 
 	return nil
+}
+
+func RemoveUnusedFile(completeFilePath string) {
+	fileBytes, err := ioutil.ReadFile(completeFilePath)
+	if err != nil {
+		// Fail silently.. not a big deal
+		return
+	}
+
+	// if !bytes.Contains(bytes.TrimSpace(fileBytes), []byte("\n")) && bytes.Equal(fileBytes[:7], []byte("package")) {
+	if !bytes.Contains(bytes.TrimSpace(fileBytes), []byte("\n")) {
+		fmt.Println("Removing:", completeFilePath)
+		if err := os.Remove(completeFilePath); err != nil {
+			// Fail silently.. not a big deal
+			return
+		}
+	}
 }

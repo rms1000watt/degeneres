@@ -1,8 +1,11 @@
-package {{.CommandLine.Command.Name}}
+package helpers
 
-{{if .API.Middlewares.CORS}}{{template "middleware-cors-vars.tpl" .}}{{end}}
+import (
+	"net/http"
+)
 
-{{if .API.Middlewares}}
+{{"//{{template \"middleware-cors-vars.tpl\" .}}"}}
+
 // Usage: HandleMiddlewares(PersonHandlerGET, MiddlewareNoCache, MiddlewareCORS)(w, r)
 func HandleMiddlewares(handlerFunc http.HandlerFunc, middlewares ...func(http.HandlerFunc) http.HandlerFunc) (h http.HandlerFunc) {
 	for _, mw := range middlewares {
@@ -12,6 +15,5 @@ func HandleMiddlewares(handlerFunc http.HandlerFunc, middlewares ...func(http.Ha
 }
 
 {{template "middleware-no-cache.tpl" .}}
-{{template "middleware-cors-func.tpl" .}}
+{{"//{{template \"middleware-cors-func.tpl\" .}}"}}
 {{template "middleware-logging.tpl" .}}
-{{end}}

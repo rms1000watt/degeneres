@@ -1,6 +1,5 @@
-package {{.CommandLine.Command.Name}}
+package helpers
 
-{{if .CommandLine.Command.API}}
 import (
     "encoding/json"
 	"errors"
@@ -70,4 +69,3 @@ func Unmarshal(r *http.Request, dst interface{}) (err error) {
 
 	return
 }
-{{end}}

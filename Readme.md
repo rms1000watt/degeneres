@@ -50,3 +50,9 @@ message TicketOut {
     string seat = 2;
 }
 ```
+
+### TODO
+
+- [] Fix lexer to include `repeated`
+- [] Fix parser to flag a message as an input
+- [] Continue refactoring templates

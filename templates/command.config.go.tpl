@@ -1,6 +1,10 @@
-package {{.CommandLine.Command.Name}}
+package {{.Camel}}
 
 type Config struct {
-    {{range $k, $v := .CommandLine.Command.Args}}{{$k | Title}} {{$v.Type | ToLower}}
-    {{end}}
+    Host string
+    Port int
+
+    CertsPath string
+    KeyName string
+    CertName string
 }

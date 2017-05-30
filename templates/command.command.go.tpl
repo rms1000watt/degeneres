@@ -1,13 +1,27 @@
-package {{.CommandLine.Command.Name}}
+package {{.Camel}}
 
 import (
     "fmt"
+    "log"
+	"net/http"
+	"path/filepath"
 )
 
-func {{.CommandLine.Command.Name | Title}}(cfg Config) {
-    fmt.Println("{{.CommandLine.Command.Name | Title}} Config:", cfg)
-    {{template "api-middle.tpl" .}}
-    {{template "version-middle.tpl" .}}
+func {{.TitleCamel}}(cfg Config) {
+    fmt.Println("{{.TitleCamel}} Config:", cfg)
+    addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+
+    fmt.Println("Starting server at:", addr)
+    {{if .CertsPath}}log.Fatal(http.ListenAndServeTLS(addr, filepath.Join(cfg.CertsPath, cfg.CertName), filepath.Join(cfg.CertsPath, cfg.KeyName), ServerHandler()))
+    {{else}}log.Fatal(http.ListenAndServe(addr, ServerHandler()))
+    {{end}}
 }
 
-{{template "api-bottom.tpl" .}}
+func ServerHandler() http.Handler {
+	mux := http.NewServeMux()
+
+	{{range $path := .Endpoints}}mux.HandleFunc("{{$path.Pattern}}", HandleMiddlewares({{$path.Name}}Handler{{GetPathMiddlewares $}}))
+	{{end}}
+
+	return mux
+}

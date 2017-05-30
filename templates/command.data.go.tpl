@@ -1,21 +1,13 @@
-package {{.CommandLine.Command.Name}}
+package {{.Camel}}
 
-{{range $path := .API.Paths}}
-{{range $method := $path.Methods}}
-type {{$path.Name | Title}}Input{{$method.Name | ToUpper}} struct {
-    {{range $input := $method.Inputs}}{{$input.Name}} {{GetInputType $input.Type}} `json:"{{$input.DisplayName}},omitempty" validate:"{{GenValidationStr $input}}" transform:"{{GenTransformStr $input}}"`
-    {{end}}
+{{range $message := .Messages}}
+type {{$message.TitleCamel}} struct {
+	{{range $field := $message.Fields}}{{$field.TitleCamel}} {{$field.DataType}} `json:"{{$field.Snake}},omitempty" validate:"{{$field.Validate}}" transform:"{{$field.Transform}}"`
+	{{end}}
 }
-
-type {{$path.Name | Title}}Output{{$method.Name | ToUpper}} struct {
-    {{range $output := $method.Outputs}}{{$output.Name}} {{$output.Type}} `json:"{{$output.DisplayName}},omitempty"`
-    {{end}}
-}
-
-{{GetStructs2 $method.Inputs $method.Outputs $.Structs}}
-{{end}}
 {{end}}
 
+{{`/*
 {{range $path := .API.Paths}}
 {{range $method := $path.Methods}}
 func get{{$path.Name | Title}}Output{{$method.Name | ToUpper}}({{$path.Name | ToLower}}Input{{$method.Name | ToUpper}} *{{$path.Name | Title}}Input{{$method.Name | ToUpper}}) ({{$path.Name | ToLower}}Output{{$method.Name | ToUpper}} {{$path.Name | Title}}Output{{$method.Name | ToUpper}}) {
@@ -38,3 +30,4 @@ func get{{$path.Name | Title}}Output{{$method.Name | ToUpper}}({{$path.Name | To
 }
 {{end}}
 {{end}}
+*/`}}

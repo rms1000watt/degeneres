@@ -1,35 +1,33 @@
 package cmd
 
 import (
-	"fmt"
-
+	"{{.ImportPath}}/{{.Camel}}"
 	"github.com/spf13/cobra"
-	
 )
 
-{{template "command-args-top.tpl" .}}
+var {{.Camel}}Cfg {{.Camel}}.Config
 
-// {{.Name}}Cmd represents the {{.Name}} command
-var {{.Name}}Cmd = &cobra.Command{
-	Use:   "{{.Name}}",
+// {{.Camel}}Cmd represents the {{.Camel}} command
+var {{.Camel}}Cmd = &cobra.Command{
+	Use:   "{{.Dash}}",
 	Short: "{{.ShortDescription}}",
 	Long: `{{.LongDescription}}`,
-	Run: Run{{.Name | Title}},
+	Run: run{{.TitleCamel}},
 }
 
 func init() {
-	RootCmd.AddCommand({{.Name}}Cmd)
+	RootCmd.AddCommand({{.Camel}}Cmd)
 
-	{{template "command-args-bottom.tpl" .}}
+	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.Host, "host", "0.0.0.0", "Host address for server")
+	{{.Camel}}Cmd.Flags().IntVar(&{{.Camel}}Cfg.Port, "port", 8080, "Port for server")
 
-	SetFlagsFromEnv({{.Name}}Cmd)
+	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.CertsPath, "certs-path", "/certs", "Path for certs")
+	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.KeyName, "key-name", "server.key", "Private key name in certs path")
+	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.CertName, "cert-name", "server.cer", "Public key name in certs path")
+
+	SetFlagsFromEnv({{.Camel}}Cmd)
 }
 
-func Run{{.Name | Title}}(cmd *cobra.Command, args []string) {
-	// Get config arguments and pass it to the function itself
-	{{.Name}}Cfg := {{.Name}}.Config{
-		{{template "command-args-middle.tpl" .}}
-	}
-
-	{{.Name}}.{{.Name | Title}}({{.Name}}Cfg)
+func run{{.TitleCamel}}(cmd *cobra.Command, args []string) {
+	{{.Camel}}.{{.TitleCamel}}({{.Camel}}Cfg)
 }

@@ -7,13 +7,15 @@ import "github.com/rms1000watt/degeneres/pb/address.proto";
 option (dg.version) = "v0.1.0";
 option (dg.author) = "Ryan Smith";
 option (dg.project_name) = "Degeneres Test";
+option (dg.docker_path) = "docker.io/rms1000watt/degeneres-test";
 option (dg.import_path) = "github.com/rms1000watt/degeneres-test";
 
 option (dg.certs_path) = "./certs";
 option (dg.public_key_name) = "server.cer";
 option (dg.private_key_name) = "server.key";
 
-service BallparkAPI {
+service Ballpark {
+    option (dg.short_description) = "Ballpark Service API for stadium information";
     option (dg.middleware.cors) = "localhost,127.0.0.1,www.example.com";
     option (dg.middleware.no_cache) = true;
 
