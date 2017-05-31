@@ -171,7 +171,7 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			ImportPath:     dg.ImportPath,
 			PublicKeyName:  dg.PublicKeyName,
 			PrivateKeyName: dg.PrivateKeyName,
-			Messages:       messages,
+			// Messages:       messages,
 		})
 	}
 	dg.Services = services

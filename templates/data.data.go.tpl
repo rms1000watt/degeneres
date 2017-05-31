@@ -1,4 +1,4 @@
-package {{.Camel}}
+package data
 
 {{range $message := .Messages}}
 type {{$message.TitleCamel}} struct {
