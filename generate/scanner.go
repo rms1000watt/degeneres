@@ -3,6 +3,7 @@ package generate
 import (
 	"bytes"
 	"fmt"
+	"strings"
 )
 
 var eof = rune(0)
@@ -220,6 +221,13 @@ func (s Scanner) MessageState() State {
 	}
 
 	dataType := s.getFieldDataType(r)
+	if isFieldRule(string(dataType)) {
+		s.Emit(Token{
+			Name:  TokenFieldRule,
+			Value: string(dataType),
+		})
+		dataType = s.getFieldDataType()
+	}
 	s.Emit(Token{
 		Name:  TokenFieldDataType,
 		Value: string(dataType),
@@ -597,4 +605,11 @@ func isCloseSquareBracket(r rune) bool {
 
 func isComma(r rune) bool {
 	return r == ','
+}
+
+func isFieldRule(in string) bool {
+	in = strings.ToLower(in)
+	return in == FieldRuleOptional ||
+		in == FieldRuleRepeated ||
+		in == FieldRuleRequired
 }

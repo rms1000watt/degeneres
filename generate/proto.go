@@ -1,9 +1,12 @@
 package generate
 
 const (
-	FileSyntax  = "syntax"
-	FilePackage = "package"
-	FileImport  = "import"
+	FileSyntax        = "syntax"
+	FilePackage       = "package"
+	FileImport        = "import"
+	FieldRuleOptional = "optional"
+	FieldRuleRepeated = "repeated"
+	FieldRuleRequired = "required"
 )
 
 func NewProto() (proto Proto) {
@@ -47,6 +50,7 @@ type Field struct {
 	Name     string
 	DataType string
 	Position string
+	Rule     string
 	Options  []Option
 }
 

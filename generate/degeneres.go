@@ -40,6 +40,7 @@ type Degeneres struct {
 	PublicKeyName        string
 	PrivateKeyName       string
 	Services             []DgService // Commands.. go run main.go $SERVICE_NAME
+	Messages             []DgMessage
 }
 
 type DgService struct {
@@ -143,7 +144,7 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 		for _, protoField := range protoMessage.Fields {
 			fields = append(fields, DgField{
 				Name:      genName(protoField.Name),
-				DataType:  fixDataType(protoField.DataType, false),
+				DataType:  fixDataType(protoField.DataType, true, protoField.Rule),
 				Transform: getTransformFromOptions(protoField.Options),
 				Validate:  getValidateFromOptions(protoField.Options),
 			})
@@ -155,6 +156,8 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			Fields: fields,
 		})
 	}
+
+	dg.Messages = messages
 
 	services := []DgService{}
 	for _, service := range proto.Services {
@@ -229,15 +232,17 @@ func getValidateFromOptions(options []Option) string {
 	return ""
 }
 
-func fixDataType(dataType string, isInput bool) string {
+func fixDataType(dataType string, isInput bool, fieldRule string) string {
+	isRepeated := strings.ToLower(fieldRule) == FieldRuleRepeated
+
 	splitDT := strings.Split(dataType, ".")
 	if len(splitDT) > 1 {
 		dataType = splitDT[len(splitDT)-1]
 	}
 
 	if isInput {
-		if len(dataType) > 2 && dataType[:2] == "[]" {
-			return "[]*" + dataType[2:]
+		if len(dataType) > 2 && isRepeated {
+			return "[]*" + dataType
 		}
 		return "*" + dataType
 	}

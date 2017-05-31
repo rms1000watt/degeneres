@@ -57,11 +57,11 @@ message TicketOut {
 }
 
 message ManagementIn {
-    bool power = 1;
+    repeated bool power = 1;
 }
 
 message ManagementOut {
-    bool success = 1;
+    repeated bool success = 1;
 }
 
 message Profile {

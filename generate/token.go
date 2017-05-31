@@ -22,6 +22,7 @@ const (
 	TokenMessageDone      = "messageDone"
 	TokenServiceDone      = "serviceDone"
 	TokenFieldDone        = "fieldDone"
+	TokenFieldRule = "fieldRule"
 )
 
 type Token struct {

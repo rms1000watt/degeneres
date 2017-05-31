@@ -55,4 +55,5 @@ message TicketOut {
 
 - [] Fix lexer to include `repeated`
 - [] Fix parser to flag a message as an input
+- [] Move `data` to different dir
 - [] Continue refactoring templates

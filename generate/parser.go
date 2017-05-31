@@ -78,6 +78,8 @@ func Parse(tokens chan Token) (proto Proto) {
 			fieldOption.Value = token.Value
 			field.Options = append(field.Options, fieldOption)
 			fieldOption = Option{}
+		case TokenFieldRule:
+			field.Rule = token.Value
 		}
 	}
 
