@@ -55,4 +55,5 @@ message TicketOut {
 
 - [x] Fix lexer to include `repeated`
 - [x] Move `data` to different dir
+- [] Identify if message is input & create inputP
 - [] Continue refactoring templates

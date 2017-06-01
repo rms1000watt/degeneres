@@ -134,6 +134,7 @@ func getTemplates(dg Degeneres) (templates []Template) {
 		"helpers.validate.go.tpl",
 		"helpers.transform.go.tpl",
 		"data.data.go.tpl",
+		"data.input.go.tpl",
 	}
 
 	for _, singleTemplateName := range singleTemplateNames {
@@ -163,11 +164,6 @@ func getTemplates(dg Degeneres) (templates []Template) {
 			FileName:     "command.config.go.tpl",
 			Data:         service,
 		})
-		// templates = append(templates, Template{
-		// 	TemplateName: lowerKey + ".data.go.tpl",
-		// 	FileName:     "command.data.go.tpl",
-		// 	Data:         service,
-		// })
 
 		for _, endpoint := range service.Endpoints {
 			// ephemeralCfg := templateCfg

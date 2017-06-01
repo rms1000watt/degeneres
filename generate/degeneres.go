@@ -41,6 +41,7 @@ type Degeneres struct {
 	PrivateKeyName       string
 	Services             []DgService // Commands.. go run main.go $SERVICE_NAME
 	Messages             []DgMessage
+	Inputs               []DgMessage
 }
 
 type DgService struct {
@@ -49,7 +50,7 @@ type DgService struct {
 	LongDescription  string
 	Middlewares      map[string]DgMiddleware
 	Endpoints        []DgEndpoint
-	Messages         []DgMessage
+	// Messages         []DgMessage
 
 	CertsPath      string
 	ImportPath     string
@@ -72,15 +73,15 @@ type DgEndpoint struct {
 
 type DgMessage struct {
 	Name
-	Fields  []DgField
-	IsInput bool
+	Fields []DgField
 }
 
 type DgField struct {
 	Name
-	DataType  string // Process all of these to include pointers if it's an input
-	Transform string // Parse from Options
-	Validate  string // Parse from Options
+	DataType  string
+	Transform string
+	Validate  string
+	Rule      string
 }
 
 type Name struct {
@@ -144,9 +145,10 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 		for _, protoField := range protoMessage.Fields {
 			fields = append(fields, DgField{
 				Name:      genName(protoField.Name),
-				DataType:  fixDataType(protoField.DataType, true, protoField.Rule),
+				DataType:  fixDataType(protoField.DataType, false, protoField.Rule),
 				Transform: getTransformFromOptions(protoField.Options),
 				Validate:  getValidateFromOptions(protoField.Options),
+				Rule:      protoField.Rule,
 			})
 
 		}
@@ -156,8 +158,33 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			Fields: fields,
 		})
 	}
-
 	dg.Messages = messages
+
+	inputs := []DgMessage{}
+	for _, message := range messages {
+		for _, service := range proto.Services {
+			for _, rpc := range service.RPCs {
+				if message.Raw == rpc.Input {
+					fields := []DgField{}
+					for _, field := range message.Fields {
+						fields = append(fields, DgField{
+							Name:      genName(field.Raw),
+							DataType:  fixDataType(field.DataType, true, field.Rule),
+							Transform: field.Transform,
+							Validate:  field.Validate,
+							Rule:      field.Rule,
+						})
+					}
+					input := DgMessage{
+						Name:   genName(message.Raw + "P"),
+						Fields: fields,
+					}
+					inputs = append(inputs, input)
+				}
+			}
+		}
+	}
+	dg.Inputs = inputs
 
 	services := []DgService{}
 	for _, service := range proto.Services {
@@ -171,7 +198,6 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			ImportPath:     dg.ImportPath,
 			PublicKeyName:  dg.PublicKeyName,
 			PrivateKeyName: dg.PrivateKeyName,
-			// Messages:       messages,
 		})
 	}
 	dg.Services = services
@@ -240,8 +266,15 @@ func fixDataType(dataType string, isInput bool, fieldRule string) string {
 		dataType = splitDT[len(splitDT)-1]
 	}
 
+	if isRepeated && len(dataType) > 2 && dataType[:2] != "[]" {
+		dataType = "[]" + dataType
+	}
+
 	if isInput {
-		if len(dataType) > 2 && isRepeated {
+		if len(dataType) > 2 && isRepeated && dataType[:2] == "[]" {
+			return "[]*" + dataType[2:]
+		}
+		if len(dataType) > 2 && isRepeated && dataType[:2] != "[]" {
 			return "[]*" + dataType
 		}
 		return "*" + dataType
