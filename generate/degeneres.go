@@ -2,6 +2,7 @@ package generate
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
@@ -24,6 +25,12 @@ const (
 	OptionProjectNameCommander = "project_name_commander"
 	OptionTransform            = "transform"
 	OptionValidate             = "validate"
+	OptionMiddlewareCORS       = "middleware.cors"
+	OptionMiddlewareNoCache    = "middleware.no_cache"
+	OptionMethod               = "method"
+
+	MiddlewareCORS    = "CORS"
+	MiddlewareNoCache = "NoCache"
 )
 
 type Degeneres struct {
@@ -39,7 +46,7 @@ type Degeneres struct {
 	CertsPath            string
 	PublicKeyName        string
 	PrivateKeyName       string
-	Services             []DgService // Commands.. go run main.go $SERVICE_NAME
+	Services             []DgService
 	Messages             []DgMessage
 	Inputs               []DgMessage
 }
@@ -48,9 +55,9 @@ type DgService struct {
 	Name
 	ShortDescription string
 	LongDescription  string
-	Middlewares      map[string]DgMiddleware
+	Middlewares      map[string]string
+	MiddlewareNames  string
 	Endpoints        []DgEndpoint
-	// Messages         []DgMessage
 
 	CertsPath      string
 	ImportPath     string
@@ -58,17 +65,16 @@ type DgService struct {
 	PrivateKeyName string
 }
 
-type DgMiddleware struct {
-	Options []KV
-}
-
 type DgEndpoint struct {
 	Name
-	Pattern     string
-	Middlewares map[string]DgMiddleware
-	Methods     []string
-	In          string
-	Out         string
+	ServiceName     Name
+	Pattern         string
+	Middlewares     map[string]string
+	MiddlewareNames string
+	Methods         []string
+	MethodCheck     string
+	In              string
+	Out             string
 }
 
 type DgMessage struct {
@@ -90,6 +96,7 @@ type Name struct {
 	Snake      string
 	Camel      string
 	Lower      string
+	LowerDash  string
 	LowerSnake string
 	LowerCamel string
 	Title      string
@@ -190,10 +197,48 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 	for _, service := range proto.Services {
 		spew.Dump(genName(service.Name))
 
-		// endpoints := []DgEndpoint{}
+		longDescription := ""
+		shortDescription := ""
+		for _, option := range service.Options {
+			optionName := strings.ToLower(fixOptionName(option.Name))
+			switch optionName {
+			case OptionShortDescription:
+				shortDescription = option.Value
+			case OptionLongDescription:
+				longDescription = option.Value
+			}
+		}
+
+		middlewares, middlewareNames := getMiddlewares(service.Options)
+
+		endpoints := []DgEndpoint{}
+		for _, rpc := range service.RPCs {
+			rpcMws, rpcMwNames := getMiddlewares(rpc.Options)
+
+			endpointName := genName(rpc.Name)
+			inputName := genName(rpc.Input)
+			outputName := genName(rpc.Output)
+			endpoints = append(endpoints, DgEndpoint{
+				Name:            endpointName,
+				ServiceName:     genName(service.Name),
+				Pattern:         "/" + endpointName.LowerDash,
+				Middlewares:     rpcMws,
+				MiddlewareNames: rpcMwNames,
+				Methods:         getMethods(rpc.Options),
+				MethodCheck:     getMethodCheck(getMethods(rpc.Options)),
+				In:              inputName.UpperCamel,
+				Out:             outputName.UpperCamel,
+			})
+		}
 
 		services = append(services, DgService{
-			Name:           genName(service.Name),
+			Name:             genName(service.Name),
+			ShortDescription: shortDescription,
+			LongDescription:  longDescription,
+			Middlewares:      middlewares,
+			MiddlewareNames:  middlewareNames,
+			Endpoints:        endpoints,
+
 			CertsPath:      dg.CertsPath,
 			ImportPath:     dg.ImportPath,
 			PublicKeyName:  dg.PublicKeyName,
@@ -207,13 +252,59 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 	return
 }
 
+func getMiddlewares(options []Option) (map[string]string, string) {
+	middlewareNameArr := []string{}
+	middlewares := map[string]string{}
+	for _, option := range options {
+		optionName := strings.ToLower(fixOptionName(option.Name))
+		middlewareName := Name{}
+		switch optionName {
+		case OptionMiddlewareCORS:
+			middlewareName = genName(MiddlewareCORS)
+		case OptionMiddlewareNoCache:
+			middlewareName = genName(MiddlewareNoCache)
+		default:
+			continue
+		}
+		middlewares[middlewareName.TitleCamel] = option.Value
+		middlewareNameArr = append(middlewareNameArr, "Middleware"+middlewareName.TitleCamel)
+	}
+
+	return middlewares, strings.Join(middlewareNameArr, ", ")
+}
+
+func getMethods(options []Option) []string {
+	methods := []string{}
+	for _, option := range options {
+		optionName := strings.ToLower(fixOptionName(option.Name))
+		switch optionName {
+		case OptionMethod:
+			methodName := genName(option.Value)
+			methods = append(methods, methodName.Upper)
+		}
+	}
+	return methods
+}
+
+func getMethodCheck(methods []string) string {
+	methodCheck := ""
+	for _, method := range methods {
+		methodCheck += fmt.Sprintf(`r.method == "%s" || `, method)
+	}
+
+	fmt.Println(methodCheck)
+
+	return strings.TrimRight(methodCheck, " || ")
+}
+
 func fixOptionName(in string) (out string) {
+	in = strings.TrimSpace(in)
 	inArr := strings.Split(in, ".")
 	if len(inArr) < 2 {
 		return in
 	}
 
-	return inArr[1]
+	return strings.Join(inArr[1:], ".")
 }
 
 func genName(in string) Name {
@@ -227,6 +318,7 @@ func genName(in string) Name {
 		Camel:      camel,
 		Snake:      snake,
 		Lower:      strings.ToLower(in),
+		LowerDash:  strings.ToLower(dash),
 		LowerSnake: strings.ToLower(snake),
 		LowerCamel: strings.ToLower(camel),
 		Upper:      strings.ToUpper(in),

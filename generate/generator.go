@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"go/build"
-	"html/template"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"text/template"
 	"time"
 )
 
@@ -147,7 +147,6 @@ func getTemplates(dg Degeneres) (templates []Template) {
 
 	for _, service := range dg.Services {
 		lowerKey := service.Camel
-		// templateCfg := yamlToTemplateCfg(cfg, key)
 
 		templates = append(templates, Template{
 			TemplateName: "cmd." + lowerKey + ".go.tpl",
@@ -173,6 +172,7 @@ func getTemplates(dg Degeneres) (templates []Template) {
 				TemplateName: fmt.Sprintf("%s.%sHandler.go.tpl", lowerKey, endpoint.Camel),
 				FileName:     "command.handler.go.tpl",
 				Data:         endpoint,
+				// Data: service,
 			})
 		}
 	}
