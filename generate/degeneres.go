@@ -2,7 +2,6 @@ package generate
 
 import (
 	"bytes"
-	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
@@ -72,7 +71,6 @@ type DgEndpoint struct {
 	Middlewares     map[string]string
 	MiddlewareNames string
 	Methods         []string
-	MethodCheck     string
 	In              string
 	Out             string
 }
@@ -225,7 +223,6 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 				Middlewares:     rpcMws,
 				MiddlewareNames: rpcMwNames,
 				Methods:         getMethods(rpc.Options),
-				MethodCheck:     getMethodCheck(getMethods(rpc.Options)),
 				In:              inputName.UpperCamel,
 				Out:             outputName.UpperCamel,
 			})
@@ -284,17 +281,6 @@ func getMethods(options []Option) []string {
 		}
 	}
 	return methods
-}
-
-func getMethodCheck(methods []string) string {
-	methodCheck := ""
-	for _, method := range methods {
-		methodCheck += fmt.Sprintf(`r.method == "%s" || `, method)
-	}
-
-	fmt.Println(methodCheck)
-
-	return strings.TrimRight(methodCheck, " || ")
 }
 
 func fixOptionName(in string) (out string) {

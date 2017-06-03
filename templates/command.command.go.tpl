@@ -5,6 +5,8 @@ import (
     "log"
 	"net/http"
 	"path/filepath"
+    
+    "{{.ImportPath}}/helpers"
 )
 
 func {{.TitleCamel}}(cfg Config) {
@@ -20,7 +22,7 @@ func {{.TitleCamel}}(cfg Config) {
 func ServerHandler() http.Handler {
 	mux := http.NewServeMux()
 
-	{{range $endpoint := .Endpoints}}mux.HandleFunc("{{$endpoint.Pattern}}", HandleMiddlewares({{$endpoint.TitleCamel}}Handler, {{$endpoint.MiddlewareNames}}))
+	{{range $endpoint := .Endpoints}}mux.HandleFunc("{{$endpoint.Pattern}}", helpers.HandleMiddlewares({{$endpoint.TitleCamel}}Handler, {{$endpoint.MiddlewareNames}}))
 	{{end}}
 
 	return mux
