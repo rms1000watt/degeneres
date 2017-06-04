@@ -1,5 +1,21 @@
 package data
 
+import (
+	"errors"
+	"fmt"
+	"net/http"
+
+	"{{.ImportPath}}/helpers"
+)
+
+var (
+	ErrFailedValidation = errors.New("Failed validation")
+	ErrFailedDecodingInput = errors.New("Failed decoding input")
+	ErrFailedValidatingInput = errors.New("Failed validating input")
+	ErrFailedConvertingInput = errors.New("Failed converting input")
+	ErrFailedTransformingInput = errors.New("Failed transforming input")
+)
+
 {{range $message := .Messages}}
 type {{$message.TitleCamel}} struct {
 	{{range $field := $message.Fields}}{{$field.TitleCamel}} {{$field.DataType}} `json:"{{$field.Snake}},omitempty" validate:"{{$field.Validate}}" transform:"{{$field.Transform}}"`
@@ -7,27 +23,42 @@ type {{$message.TitleCamel}} struct {
 }
 {{end}}
 
-{{`/*
-{{range $path := .API.Paths}}
-{{range $method := $path.Methods}}
-func get{{$path.Name | Title}}Output{{$method.Name | ToUpper}}({{$path.Name | ToLower}}Input{{$method.Name | ToUpper}} *{{$path.Name | Title}}Input{{$method.Name | ToUpper}}) ({{$path.Name | ToLower}}Output{{$method.Name | ToUpper}} {{$path.Name | Title}}Output{{$method.Name | ToUpper}}) {
-	if {{$path.Name | ToLower}}Input{{$method.Name | ToUpper}} == nil {
-		return
-	}
-	
-	{{range $output := $method.Outputs}}{{if OutputInInputs $output.Name $method.Inputs}}{{$output.Name | ToCamelCase}} := {{EmptyValue $output.Type}}
-	if {{$path.Name | ToLower}}Input{{$method.Name | ToUpper}}.{{$output.Name | Title}} != nil {
-		{{$output.Name | ToCamelCase}} = {{GetDereferenceFunc $output.Type}}({{$path.Name | ToLower}}Input{{$method.Name | ToUpper}}.{{$output.Name | Title}})
-	}{{end}}
-	
-	{{end}}
+{{range $message := .Messages}}{{if $message.IsInput}}
+func Convert{{$message.TitleCamel}}P({{$message.Camel}}P *{{$message.TitleCamel}}P) ({{$message.Camel}} {{$message.TitleCamel}}, err error) {
+	return 
+}
+{{end}}{{end}}
 
-	{{$path.Name | ToLower}}Output{{$method.Name | ToUpper}} = {{$path.Name | Title}}Output{{$method.Name | ToUpper}}{
-		{{range $output := $method.Outputs}}{{if OutputInInputs $output.Name $method.Inputs}}{{$output.Name | Title}}: {{$output.Name | ToCamelCase}},
-		{{end}}{{end}}
+{{range $message := .Messages}}{{if $message.IsInput}}
+func Get{{$message.TitleCamel}}(r *http.Request) ({{$message.Camel}} {{$message.TitleCamel}}, err error) {
+	inputP := &{{$message.TitleCamel}}P{}
+	if err := helpers.Unmarshal(r, inputP); err != nil {
+		fmt.Println("Failed decoding input:", err)
+		return {{$message.Camel}}, ErrFailedDecodingInput
 	}
+
+	msg, err := helpers.Validate(inputP)
+	if err != nil {
+		fmt.Println("Failed validating input:", err)
+		return {{$message.Camel}}, ErrFailedValidatingInput
+	}
+
+	if msg != "" {
+		fmt.Println("Failed validation:", msg)
+		return {{$message.Camel}}, ErrFailedValidation
+	}	
+
+	if err := helpers.Transform(inputP); err != nil {
+		fmt.Println("Failed transforming input:", err)
+		return {{$message.Camel}}, ErrFailedTransformingInput
+	}	
+
+	{{$message.Camel}}, err = Convert{{$message.TitleCamel}}P(inputP)
+	if err != nil {
+		fmt.Println("Failed converting input:", err)
+		return {{$message.Camel}}, ErrFailedConvertingInput
+	}
+
 	return
 }
-{{end}}
-{{end}}
-*/`}}
+{{end}}{{end}}

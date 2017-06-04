@@ -70,14 +70,17 @@ type DgEndpoint struct {
 	Pattern         string
 	Middlewares     map[string]string
 	MiddlewareNames string
-	Methods         []string
-	In              string
-	Out             string
+	Methods         []Name
+	Input           Name
+	Output          Name
+
+	ImportPath string
 }
 
 type DgMessage struct {
 	Name
-	Fields []DgField
+	Fields  []DgField
+	IsInput bool
 }
 
 type DgField struct {
@@ -166,10 +169,12 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 	dg.Messages = messages
 
 	inputs := []DgMessage{}
-	for _, message := range messages {
+	for ind, message := range messages {
 		for _, service := range proto.Services {
 			for _, rpc := range service.RPCs {
 				if message.Raw == rpc.Input {
+					messages[ind].IsInput = true
+
 					fields := []DgField{}
 					for _, field := range message.Fields {
 						fields = append(fields, DgField{
@@ -214,8 +219,6 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			rpcMws, rpcMwNames := getMiddlewares(rpc.Options)
 
 			endpointName := genName(rpc.Name)
-			inputName := genName(rpc.Input)
-			outputName := genName(rpc.Output)
 			endpoints = append(endpoints, DgEndpoint{
 				Name:            endpointName,
 				ServiceName:     genName(service.Name),
@@ -223,8 +226,10 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 				Middlewares:     rpcMws,
 				MiddlewareNames: rpcMwNames,
 				Methods:         getMethods(rpc.Options),
-				In:              inputName.UpperCamel,
-				Out:             outputName.UpperCamel,
+				Input:           genName(rpc.Input),
+				Output:          genName(rpc.Output),
+
+				ImportPath: dg.ImportPath,
 			})
 		}
 
@@ -264,20 +269,19 @@ func getMiddlewares(options []Option) (map[string]string, string) {
 			continue
 		}
 		middlewares[middlewareName.TitleCamel] = option.Value
-		middlewareNameArr = append(middlewareNameArr, "Middleware"+middlewareName.TitleCamel)
+		middlewareNameArr = append(middlewareNameArr, "helpers.Middleware"+middlewareName.TitleCamel)
 	}
 
 	return middlewares, strings.Join(middlewareNameArr, ", ")
 }
 
-func getMethods(options []Option) []string {
-	methods := []string{}
+func getMethods(options []Option) []Name {
+	methods := []Name{}
 	for _, option := range options {
 		optionName := strings.ToLower(fixOptionName(option.Name))
 		switch optionName {
 		case OptionMethod:
-			methodName := genName(option.Value)
-			methods = append(methods, methodName.Upper)
+			methods = append(methods, genName(strings.ToLower(option.Value)))
 		}
 	}
 	return methods

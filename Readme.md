@@ -51,6 +51,23 @@ message TicketOut {
 }
 ```
 
+### Development Commands
+
+```sh
+clear; rm -rf out; go run main.go generate
+PROJECT_PATH=$(go env GOPATH)/src/github.com/rms1000watt/degeneres-test bash -c 'rm -rf $PROJECT_PATH && mkdir $PROJECT_PATH  && mkdir $PROJECT_PATH/certs && cp -r out/* $PROJECT_PATH && cp -r certs/* $PROJECT_PATH/certs && cp out/.gitignore $PROJECT_PATH/'
+
+cd ../degeneres-test; clear; go run main.go ballpark --certs-path ./certs
+
+# Fail
+curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' localhost:8080/person
+
+# Success
+curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' localhost:8080/person
+curl -X POST -d '{"first_name":"ChetChetChetChet","middle_name":"Darf","last_name":"Star","age":33,"account":123.123,"password":"pASSword"}' --insecure https://localhost:8080/person
+
+```
+
 ### TODO
 
 - [x] Fix lexer to include `repeated`
