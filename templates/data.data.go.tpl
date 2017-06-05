@@ -24,12 +24,6 @@ type {{$message.TitleCamel}} struct {
 {{end}}
 
 {{range $message := .Messages}}{{if $message.IsInput}}
-func Convert{{$message.TitleCamel}}P({{$message.Camel}}P *{{$message.TitleCamel}}P) ({{$message.Camel}} {{$message.TitleCamel}}, err error) {
-	return 
-}
-{{end}}{{end}}
-
-{{range $message := .Messages}}{{if $message.IsInput}}
 func Get{{$message.TitleCamel}}(r *http.Request) ({{$message.Camel}} {{$message.TitleCamel}}, err error) {
 	inputP := &{{$message.TitleCamel}}P{}
 	if err := helpers.Unmarshal(r, inputP); err != nil {
@@ -53,12 +47,10 @@ func Get{{$message.TitleCamel}}(r *http.Request) ({{$message.Camel}} {{$message.
 		return {{$message.Camel}}, ErrFailedTransformingInput
 	}	
 
-	{{$message.Camel}}, err = Convert{{$message.TitleCamel}}P(inputP)
-	if err != nil {
-		fmt.Println("Failed converting input:", err)
-		return {{$message.Camel}}, ErrFailedConvertingInput
-	}
+	{{$message.Camel}} = Convert{{$message.TitleCamel}}P(inputP)
 
 	return
 }
 {{end}}{{end}}
+
+
