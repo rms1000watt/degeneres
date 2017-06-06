@@ -99,8 +99,8 @@ type DgEndpoint struct {
 
 type DgMessage struct {
 	Name
-	Fields  []DgField
-	IsInput bool
+	Fields []DgField
+	// IsInput bool
 }
 
 type DgField struct {
@@ -192,85 +192,13 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			Fields: fields,
 		}
 
-		if !messageInMessages(message, messages) {
+		if !dgMessageInMessages(message, messages) {
 			messages = append(messages, message)
 		}
 	}
 	dg.Messages = messages
 
-	inputs := []DgMessage{}
-	additionalInputs := []string{}
-	for ind, message := range messages {
-		for _, service := range proto.Services {
-			for _, rpc := range service.RPCs {
-				if message.Raw == rpc.Input {
-					messages[ind].IsInput = true
-
-					fields := []DgField{}
-					for _, field := range message.Fields {
-
-						// TODO: Get additional inputs
-						isStruct := getIsStruct(field.DataType)
-						if isStruct {
-							additionalInputs = append(additionalInputs, field.Raw)
-						}
-
-						fields = append(fields, DgField{
-							Name:             genName(field.Raw),
-							DataType:         fixDataType(field.DataType, true, field.Rule),
-							Transform:        field.Transform,
-							Validate:         field.Validate,
-							Rule:             field.Rule,
-							IsRepeated:       getIsRepeated(field.Rule, field.DataType),
-							IsStruct:         isStruct,
-							IsRepeatedStruct: getIsRepeatedStruct(field.Rule, field.DataType),
-						})
-					}
-					input := DgMessage{
-						Name:   genName(message.Raw + "P"),
-						Fields: fields,
-					}
-					if !messageInMessages(input, inputs) {
-						inputs = append(inputs, input)
-					}
-				}
-			}
-		}
-	}
-	// TODO: Handle additional inputs
-	for _, message := range messages {
-		for _, additionalInput := range additionalInputs {
-			if additionalInput == message.Raw {
-				fields := []DgField{}
-				for _, field := range message.Fields {
-
-					isStruct := getIsStruct(field.DataType)
-					if isStruct {
-						additionalInputs = append(additionalInputs, field.Raw)
-					}
-
-					fields = append(fields, DgField{
-						Name:             genName(field.Raw),
-						DataType:         fixDataType(field.DataType, true, field.Rule),
-						Transform:        field.Transform,
-						Validate:         field.Validate,
-						Rule:             field.Rule,
-						IsRepeated:       getIsRepeated(field.Rule, field.DataType),
-						IsStruct:         isStruct,
-						IsRepeatedStruct: getIsRepeatedStruct(field.Rule, field.DataType),
-					})
-				}
-				input := DgMessage{
-					Name:   genName(message.Raw + "P"),
-					Fields: fields,
-				}
-				if !messageInMessages(input, inputs) {
-					inputs = append(inputs, input)
-				}
-			}
-		}
-	}
-
+	inputs := getInputs(proto)
 	dg.Inputs = inputs
 
 	services := []DgService{}
@@ -364,6 +292,46 @@ func getMethods(options []Option) []Name {
 	return methods
 }
 
+func getInputs(proto Proto) (out []DgMessage) {
+	// Scan through RPCs to get inputs
+	inputs := []Message{}
+	for _, message := range proto.Messages {
+		for _, service := range proto.Services {
+			for _, rpc := range service.RPCs {
+				if message.Name == rpc.Input {
+					inputs = append(inputs, message)
+				}
+			}
+		}
+	}
+
+	// TODO: Get additional inputs
+	// Given a set of inputs, check all message fields and add the structs to inputs. Repeat with new inputs until no new inputs.
+
+	// Convert inputs
+	for _, input := range inputs {
+		fields := []DgField{}
+		for _, field := range input.Fields {
+			fields = append(fields, DgField{
+				Name:             genName(field.Name),
+				DataType:         fixDataType(field.DataType, true, field.Rule),
+				Transform:        getTransformFromOptions(field.Options),
+				Validate:         getValidateFromOptions(field.Options),
+				Rule:             field.Rule,
+				IsRepeated:       getIsRepeated(field.Rule, field.DataType),
+				IsStruct:         getIsStruct(field.DataType),
+				IsRepeatedStruct: getIsRepeatedStruct(field.Rule, field.DataType),
+			})
+		}
+		out = append(out, DgMessage{
+			Name:   genName(input.Name + "P"),
+			Fields: fields,
+		})
+	}
+
+	return
+}
+
 func fixOptionName(in string) (out string) {
 	in = strings.TrimSpace(in)
 	inArr := strings.Split(in, ".")
@@ -435,7 +403,16 @@ func getIsRepeatedStruct(fieldRule, dataType string) bool {
 	return strings.ToLower(fieldRule) == FieldRuleRepeated && getIsStruct(dataType)
 }
 
-func messageInMessages(message DgMessage, messages []DgMessage) bool {
+func messageInMessages(message Message, messages []Message) bool {
+	for _, knownMessage := range messages {
+		if knownMessage.Name == message.Name {
+			return true
+		}
+	}
+	return false
+}
+
+func dgMessageInMessages(message DgMessage, messages []DgMessage) bool {
 	for _, knownMessage := range messages {
 		if knownMessage.Raw == message.Raw {
 			return true
@@ -452,11 +429,11 @@ func fixDataType(dataType string, isInput bool, fieldRule string) string {
 		dataType = splitDT[len(splitDT)-1]
 	}
 
-	if isRepeated && len(dataType) > 2 && dataType[:2] != "[]" {
-		dataType = "[]" + dataType
-	}
-
 	if isInput {
+		if getIsStruct(dataType) || getIsRepeatedStruct(fieldRule, dataType) {
+			dataType += "P"
+		}
+
 		if len(dataType) > 2 && isRepeated && dataType[:2] == "[]" {
 			return "[]*" + dataType[2:]
 		}
@@ -465,6 +442,11 @@ func fixDataType(dataType string, isInput bool, fieldRule string) string {
 		}
 		return "*" + dataType
 	}
+
+	if isRepeated && len(dataType) > 2 && dataType[:2] != "[]" {
+		dataType = "[]" + dataType
+	}
+
 	return dataType
 }
 

@@ -36,6 +36,7 @@ var (
 		"GetInputType":         GetInputType,
 		"GetDereferenceFunc":   GetDereferenceFunc,
 		"IsStruct":             IsStruct,
+		"MinusP":               MinusP,
 	}
 )
 

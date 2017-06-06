@@ -35,10 +35,11 @@ service Ballpark {
 }
 
 message PersonIn {
-    int64 id                = 1;
-    string first_name       = 2 [(dg.validate) = "maxLength=100", (dg.transform) = "truncate=50"];
-    string last_name        = 3 [(dg.validate) = "maxLength=1000,required,minLength=1", (dg.transform) = "truncate=50,hash"];
-    address.Address address = 4;
+    int64 id                       = 1;
+    string first_name              = 2 [(dg.validate) = "maxLength=100", (dg.transform) = "truncate=50"];
+    string last_name               = 3 [(dg.validate) = "maxLength=1000,required,minLength=1", (dg.transform) = "truncate=50,hash"];
+    address.Address address        = 4;
+    repeated Attendance attendance = 5;
 }
 
 message PersonOut {
@@ -68,4 +69,8 @@ message ManagementOut {
 message Profile {
     string email    = 1 [(dg.transform) = "hash"];
     string username = 2;
+}
+
+message Attendance {
+    string date = 1;
 }

@@ -191,3 +191,10 @@ func IsStruct(dataType string) (isStruct bool) {
 		dataType == DataTypeFloat64Arr ||
 		dataType == DataTypeBoolArr)
 }
+
+func MinusP(in string) string {
+	if string(in[len(in)-1]) == "P" {
+		return in[:len(in)-1]
+	}
+	return in
+}
