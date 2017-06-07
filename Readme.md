@@ -73,9 +73,12 @@ In one terminal:
 ```bash
 # Get the project
 go get github.com/rms1000watt/degeneres
+cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres
+
+# Generate self signed certs
+go run main.go generate certs
 
 # Run the project with the default protobuf as `pb/test.proto`
-cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres
 clear; rm -rf out; go run main.go generate
 
 # Copy the output to a test directory
@@ -98,6 +101,8 @@ curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' 
 curl -X POST -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 ```
 
+
+
 ### TODO
 
 - [x] Fix lexer to include `repeated`
@@ -105,3 +110,4 @@ curl -X POST -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [x] Identify if message is input & create inputP
 - [x] Continue refactoring templates
 - [] Check for `required` tag first then continue in order
+- [] Create test repo
