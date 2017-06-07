@@ -37,6 +37,7 @@ var (
 		"GetDereferenceFunc":   GetDereferenceFunc,
 		"IsStruct":             IsStruct,
 		"MinusP":               MinusP,
+		"MinusStar":            MinusStar,
 	}
 )
 
@@ -134,6 +135,7 @@ func getTemplates(dg Degeneres) (templates []Template) {
 		"helpers.unmarshal.go.tpl",
 		"helpers.validate.go.tpl",
 		"helpers.transform.go.tpl",
+		"helpers.handler.go.tpl",
 		"data.data.go.tpl",
 		"data.input.go.tpl",
 	}

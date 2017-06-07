@@ -198,3 +198,7 @@ func MinusP(in string) string {
 	}
 	return in
 }
+
+func MinusStar(in string) string {
+	return strings.Replace(in, "*", "", -1)
+}

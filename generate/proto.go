@@ -44,6 +44,7 @@ type Message struct {
 	Name     string
 	Fields   []Field
 	Imported bool
+	RPCInput bool
 }
 
 type Field struct {

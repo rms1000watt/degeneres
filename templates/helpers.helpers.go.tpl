@@ -64,10 +64,6 @@ var (
 	TypeOfBoolP    = reflect.TypeOf(dummyBoolP)
 )
 
-func ErrorJSON(msg string) (out string) {
-	return `{"error":"` + msg + `"}`
-}
-
 func getRandomSalt() (salt []byte, err error) {
 	salt = make([]byte, 32)
 	_, err = rand.Read(salt)

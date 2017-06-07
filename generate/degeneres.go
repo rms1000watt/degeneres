@@ -99,8 +99,8 @@ type DgEndpoint struct {
 
 type DgMessage struct {
 	Name
-	Fields []DgField
-	// IsInput bool
+	Fields   []DgField
+	RPCInput bool
 }
 
 type DgField struct {
@@ -299,14 +299,15 @@ func getInputs(proto Proto) (out []DgMessage) {
 		for _, service := range proto.Services {
 			for _, rpc := range service.RPCs {
 				if message.Name == rpc.Input {
+					message.RPCInput = true
 					inputs = append(inputs, message)
 				}
 			}
 		}
 	}
 
-	// TODO: Get additional inputs
-	// Given a set of inputs, check all message fields and add the structs to inputs. Repeat with new inputs until no new inputs.
+	childInputs := getChildInputs(proto, inputs)
+	inputs, _ = mergeInputs(inputs, childInputs)
 
 	// Convert inputs
 	for _, input := range inputs {
@@ -324,11 +325,58 @@ func getInputs(proto Proto) (out []DgMessage) {
 			})
 		}
 		out = append(out, DgMessage{
-			Name:   genName(input.Name + "P"),
-			Fields: fields,
+			Name:     genName(input.Name + "P"),
+			Fields:   fields,
+			RPCInput: input.RPCInput,
 		})
 	}
 
+	return
+}
+
+func getChildInputs(proto Proto, inputs []Message) (childInputs []Message) {
+	fieldInputs := []string{}
+	for _, input := range inputs {
+		for _, field := range input.Fields {
+			if getIsStruct(field.DataType) {
+				dtArr := strings.Split(field.DataType, ".")
+				dt := dtArr[len(dtArr)-1]
+				fieldInputs = append(fieldInputs, dt)
+			}
+		}
+	}
+
+	for _, message := range proto.Messages {
+		for _, fieldInput := range fieldInputs {
+			if message.Name == fieldInput {
+				childInputs = append(childInputs, message)
+			}
+		}
+	}
+
+	childInputs, additions := mergeInputs(inputs, childInputs)
+
+	if additions {
+		childInputs = getChildInputs(proto, childInputs)
+	}
+
+	return
+}
+
+func mergeInputs(inputs, childInputs []Message) (out []Message, additions bool) {
+	inputsMap := map[string]Message{}
+	for _, input := range inputs {
+		inputsMap[input.Name] = input
+	}
+
+	for _, childInput := range childInputs {
+		inputsMap[childInput.Name] = childInput
+	}
+
+	for _, input := range inputsMap {
+		out = append(out, input)
+	}
+	additions = len(inputs) < len(inputsMap)
 	return
 }
 

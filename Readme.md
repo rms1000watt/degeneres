@@ -54,16 +54,18 @@ message TicketOut {
 ### Development Commands
 
 ```sh
+cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres
 clear; rm -rf out; go run main.go generate
 PROJECT_PATH=$(go env GOPATH)/src/github.com/rms1000watt/degeneres-test bash -c 'rm -rf $PROJECT_PATH && mkdir $PROJECT_PATH  && mkdir $PROJECT_PATH/certs && cp -r out/* $PROJECT_PATH && cp -r certs/* $PROJECT_PATH/certs && cp out/.gitignore $PROJECT_PATH/'
 
+cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres-test
 cd ../degeneres-test; clear; go run main.go ballpark --certs-path ./certs
 
 # Fail
-curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' localhost:8080/person
+curl -X POST -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 
 # Success
-curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' localhost:8080/person
+curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' --insecure https://localhost:8080/person
 curl -X POST -d '{"first_name":"ChetChetChetChet","middle_name":"Darf","last_name":"Star","age":33,"account":123.123,"password":"pASSword"}' --insecure https://localhost:8080/person
 
 ```
@@ -72,5 +74,6 @@ curl -X POST -d '{"first_name":"ChetChetChetChet","middle_name":"Darf","last_nam
 
 - [x] Fix lexer to include `repeated`
 - [x] Move `data` to different dir
-- [] Identify if message is input & create inputP
-- [] Continue refactoring templates
+- [x] Identify if message is input & create inputP
+- [x] Continue refactoring templates
+- [] Check for `required` tag first then continue in order
