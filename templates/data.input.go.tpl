@@ -9,11 +9,7 @@ import (
 )
 
 var (
-	ErrFailedValidation = errors.New("Failed validation")
 	ErrFailedDecodingInput = errors.New("Failed decoding input")
-	ErrFailedValidatingInput = errors.New("Failed validating input")
-	ErrFailedConvertingInput = errors.New("Failed converting input")
-	ErrFailedTransformingInput = errors.New("Failed transforming input")
 )
 
 {{range $input := .Inputs}}
