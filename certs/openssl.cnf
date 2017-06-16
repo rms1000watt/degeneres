@@ -1,13 +1,22 @@
 [ req ]
 distinguished_name = req_distinguished_name
-req_extensions     = v3_req
+x509_extensions    = v3_ext
+req_extensions     = v3_ext
+prompt             = no
+default_md         = sha512
+default_bits       = 4096
 
 [ req_distinguished_name ]
-CN = Common Name
+C  = US
+ST = CA
+L  = Newport Beach
+O  = Super Evil Mega Company
+OU = Backend Engineers
+CN = rms1000watt
 
-[ v3_req ]
-basicConstraints = CA:FALSE
-keyUsage         = nonRepudiation, digitalSignature, keyEncipherment
+[ v3_ext ]
+keyUsage         = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
 subjectAltName   = @alt_names
 
 [ alt_names ]

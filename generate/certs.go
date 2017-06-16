@@ -29,11 +29,11 @@ func Certs(certsPath, commonName string) {
 
 	// # Courtesy of https://github.com/deckarep/EasyCert
 	cmds := []string{
-		"openssl genrsa -out ca.key 2048",
-		`openssl req -x509 -new -key ca.key -out ca.cer -days 90 -subj /CN="rms1000watt-CA"`,
-		"openssl genrsa -out server.key 2048",
-		`openssl req -new -key server.key -out server.csr -config ./openssl.cnf -subj /CN="` + commonName + `"`,
-		"openssl x509 -req -in server.csr -out server.cer -CAkey ca.key -CA ca.cer -days 90 -CAcreateserial -CAserial serial",
+		"openssl genrsa -out ca.key 4096",
+		`openssl req -x509 -new -key ca.key -out ca.cer -days 90 -subj /CN="rms1000watt"`,
+		"openssl genrsa -out server.key 4096",
+		"openssl req -new -out server.csr -key server.key -config ./openssl.cnf",
+		"openssl x509 -req -in server.csr -out server.cer -days 90 -CAkey ca.key -CA ca.cer -CAcreateserial -CAserial serial -extensions v3_ext -extfile ./openssl.cnf",
 	}
 
 	for _, cmd := range cmds {
