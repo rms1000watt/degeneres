@@ -13,10 +13,6 @@ option (dg.project_name) = "Degeneres Test";
 option (dg.docker_path) = "docker.io/rms1000watt/degeneres-test";
 option (dg.import_path) = "github.com/rms1000watt/degeneres-test";
 
-option (dg.certs_path) = "./certs";
-option (dg.public_key_name) = "server.cer";
-option (dg.private_key_name) = "server.key";
-
 service BallparkAPI {
     option (dg.short_description) = "Ballpark Service API for stadium information";
     option (dg.middleware.cors) = "localhost,127.0.0.1,www.example.com";
@@ -87,8 +83,9 @@ PROJECT_PATH=$(go env GOPATH)/src/github.com/rms1000watt/degeneres-test bash -c 
 # Go to the test directory
 cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres-test
 
-# Run the project
-cd ../degeneres-test; clear; go run main.go ballpark --certs-path ./certs
+# Run the project 
+cd ../degeneres-test; clear; go run main.go ballpark
+cd ../degeneres-test; clear; go run main.go ballpark --certs-path ./certs --cert-name server.cer --key-name server.key
 ```
 
 In another terminal:

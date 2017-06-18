@@ -62,9 +62,6 @@ type Degeneres struct {
 	ProjectFolder        string
 	ShortDescription     string
 	LongDescription      string
-	CertsPath            string
-	PublicKeyName        string
-	PrivateKeyName       string
 	Services             []DgService
 	Messages             []DgMessage
 	Inputs               []DgMessage
@@ -78,10 +75,7 @@ type DgService struct {
 	MiddlewareNames  string
 	Endpoints        []DgEndpoint
 
-	CertsPath      string
-	ImportPath     string
-	PublicKeyName  string
-	PrivateKeyName string
+	ImportPath string
 }
 
 type DgEndpoint struct {
@@ -138,8 +132,6 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 		switch optionName {
 		case OptionAuthor:
 			dg.Author = option.Value
-		case OptionCertsPath:
-			dg.CertsPath = option.Value
 		case OptionImportPath:
 			dg.ImportPath = option.Value
 			splitPath := strings.Split(dg.ImportPath, "/")
@@ -148,18 +140,6 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			dg.LongDescription = option.Value
 		case OptionShortDescription:
 			dg.ShortDescription = option.Value
-		case OptionPrivateKeyName:
-			if option.Value == "" {
-				dg.PrivateKeyName = "server.key"
-				continue
-			}
-			dg.PrivateKeyName = option.Value
-		case OptionPublicKeyName:
-			if option.Value == "" {
-				dg.PublicKeyName = "server.cer"
-				continue
-			}
-			dg.PublicKeyName = option.Value
 		case OptionProjectName:
 			dg.ProjectName = option.Value
 			dg.ProjectNameCommander = ToDashCase(option.Value)
@@ -246,10 +226,7 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			MiddlewareNames:  middlewareNames,
 			Endpoints:        endpoints,
 
-			CertsPath:      dg.CertsPath,
-			ImportPath:     dg.ImportPath,
-			PublicKeyName:  dg.PublicKeyName,
-			PrivateKeyName: dg.PrivateKeyName,
+			ImportPath: dg.ImportPath,
 		})
 	}
 	dg.Services = services

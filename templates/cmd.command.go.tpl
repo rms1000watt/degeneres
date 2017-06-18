@@ -21,9 +21,9 @@ func init() {
 	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.Host, "host", "0.0.0.0", "Host address for server")
 	{{.Camel}}Cmd.Flags().IntVar(&{{.Camel}}Cfg.Port, "port", 8080, "Port for server")
 
-	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.CertsPath, "certs-path", "/certs", "Path for certs")
-	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.KeyName, "key-name", "server.key", "Private key name in certs path")
-	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.CertName, "cert-name", "server.cer", "Public key name in certs path")
+	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.CertsPath, "certs-path", "", "Path for certs")
+	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.KeyName, "key-name", "", "Private key name in certs path")
+	{{.Camel}}Cmd.Flags().StringVar(&{{.Camel}}Cfg.CertName, "cert-name", "", "Public key name in certs path")
 
 	SetFlagsFromEnv({{.Camel}}Cmd)
 }
