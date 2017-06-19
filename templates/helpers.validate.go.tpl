@@ -19,15 +19,15 @@ func Validate(in interface{}) (msg string, err error) {
 			continue
 		}
 
+		if strings.Contains(strings.ToLower(tag), ValidateStrRequired) {
+			if v.Field(i).Pointer() == 0 {
+				return ValidateStrRequiredErr, nil
+			}
+		}
+
 		params := strings.Split(tag, ",")
 		for _, param := range params {
 			fmt.Printf("Validating: %s - %s\n", v.Type().Field(i).Name, param)
-
-			if param == ValidateStrRequired {
-				if v.Field(i).Pointer() == 0 {
-					return ValidateStrRequiredErr, nil
-				}
-			}
 
 			switch v.Field(i).Elem().Type() {
 			case TypeOfString:

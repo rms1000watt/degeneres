@@ -17,7 +17,6 @@ var certsCfg generate.CertsConfig
 
 func init() {
 	generateCmd.AddCommand(certsCmd)
-	// TODO: Separate this out better. openssl-config, out-path. Update code to reflect
 	certsCmd.Flags().StringVar(&certsCfg.CertsPath, "certs-path", "./certs", "Output path for newly generated certs")
 	certsCmd.Flags().StringVar(&certsCfg.OpensslConfig, "openssl-config", "./certs/openssl.cnf", "Openssl config location")
 }

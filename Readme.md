@@ -92,6 +92,7 @@ In another terminal:
 
 ```bash
 # Run a Successful command
+curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' http://localhost:8080/person
 curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' --insecure https://localhost:8080/person
 
 # Run a Failing command
@@ -106,5 +107,8 @@ curl -X POST -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [x] Move `data` to different dir
 - [x] Identify if message is input & create inputP
 - [x] Continue refactoring templates
-- [] Check for `required` tag first then continue in order
+- [x] Check for `required` tag first then continue in order
+- [] Use a logging package
+- [] Complete middleware
+- [] More docs
 - [] Create test repo

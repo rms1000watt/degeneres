@@ -13,19 +13,19 @@ const (
 	TransformStrEncrypt         = "encrypt"
 	TransformStrDecrypt         = "decrypt"
 	TransformStrHash            = "hash"
-	TransformStrPasswordHash    = "passwordHash"
+	TransformStrPasswordHash    = "passwordhash"
 	TransformStrTruncate        = "truncate"
-	TransformStrTrimChars       = "trimChars"
-	TransformStrTrimSpace       = "trimSpace"
+	TransformStrTrimChars       = "trimchars"
+	TransformStrTrimSpace       = "trimspace"
 	TransformStrDefault         = "default"
-	ValidateStrMaxLength        = "maxLength"
-	ValidateStrMinLength        = "minLength"
-	ValidateStrGreaterThan      = "greaterThan"
-	ValidateStrLessThan         = "lessThan"
+	ValidateStrMaxLength        = "maxlength"
+	ValidateStrMinLength        = "minlength"
+	ValidateStrGreaterThan      = "greaterthan"
+	ValidateStrLessThan         = "lessthan"
 	ValidateStrRequired         = "required"
-	ValidateStrMustHaveChars    = "mustHaveChars"
-	ValidateStrCantHaveChars    = "cantHaveChars"
-	ValidateStrOnlyHaveChars    = "onlyHaveChars"
+	ValidateStrMustHaveChars    = "musthavechars"
+	ValidateStrCantHaveChars    = "canthavechars"
+	ValidateStrOnlyHaveChars    = "onlyhavechars"
 	ValidateStrMaxLengthErr     = "Failed Max Length Validation"
 	ValidateStrMinLengthErr     = "Failed Min Length Validation"
 	ValidateStrRequiredErr      = "Failed Required Validation"
@@ -77,6 +77,10 @@ func getTagKV(param string) (k, v string) {
 	if len(paramArr) == 2 {
 		v = paramArr[1]
 	}
+	k = strings.ToLower(k)
+	k = strings.Replace(k, "-", "", -1)
+	k = strings.Replace(k, "_", "", -1)
+	k = strings.Replace(k, " ", "", -1)
 	return
 }
 
