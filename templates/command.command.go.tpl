@@ -25,7 +25,7 @@ func {{.TitleCamel}}(cfg Config) {
 func ServerHandler() http.Handler {
 	mux := http.NewServeMux()
 
-	{{range $endpoint := .Endpoints}}mux.HandleFunc("{{$endpoint.Pattern}}", helpers.HandleMiddlewares({{$endpoint.TitleCamel}}Handler, {{$endpoint.MiddlewareNames}}))
+	{{range $endpoint := .Endpoints}}mux.HandleFunc("{{$endpoint.Pattern}}", helpers.HandleMiddlewares({{$endpoint.TitleCamel}}Handler, {{$.MiddlewareNames}}))
 	{{end}}
 
 	return mux

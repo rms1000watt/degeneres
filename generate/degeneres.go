@@ -27,6 +27,7 @@ const (
 	OptionMiddlewareCORS       = "middleware.cors"
 	OptionMiddlewareNoCache    = "middleware.no_cache"
 	OptionMethod               = "method"
+	OptionOrigins              = "origins"
 
 	MiddlewareCORS    = "CORS"
 	MiddlewareNoCache = "NoCache"
@@ -62,6 +63,7 @@ type Degeneres struct {
 	ProjectFolder        string
 	ShortDescription     string
 	LongDescription      string
+	Origins              string
 	Services             []DgService
 	Messages             []DgMessage
 	Inputs               []DgMessage
@@ -147,6 +149,8 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			dg.Version = option.Value
 		case OptionDockerPath:
 			dg.DockerPath = option.Value
+		case OptionOrigins:
+			dg.Origins = getOrigins(option.Value)
 		}
 	}
 
@@ -234,6 +238,14 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 	err = Validate(&dg)
 
 	return
+}
+
+func getOrigins(val string) string {
+	originsArr := strings.Split(val, ",")
+	for ind, origin := range originsArr {
+		originsArr[ind] = strings.TrimSpace(origin)
+	}
+	return `"` + strings.Join(originsArr, "\",\n\t\"") + `",`
 }
 
 func getMiddlewares(options []Option) (map[string]string, string) {

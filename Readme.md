@@ -12,14 +12,14 @@ option (dg.author) = "Ryan Smith";
 option (dg.project_name) = "Degeneres Test";
 option (dg.docker_path) = "docker.io/rms1000watt/degeneres-test";
 option (dg.import_path) = "github.com/rms1000watt/degeneres-test";
+option (dg.origins) = "http://localhost,https://localhost,http://127.0.0.1,https://127.0.0.1";
 
 service BallparkAPI {
     option (dg.short_description) = "Ballpark Service API for stadium information";
-    option (dg.middleware.cors) = "localhost,127.0.0.1,www.example.com";
+    option (dg.middleware.cors) = "true";
     option (dg.middleware.no_cache) = true;
 
     rpc Person(PersonIn) returns (PersonOut) {
-        option (dg.middleware.no_cache) = false;
         option (dg.method) = "GET";
         option (dg.method) = "POST";
     }
@@ -36,7 +36,7 @@ service BallparkAPI {
 message PersonIn {
     int64 id          = 1;
     string first_name = 2 [(dg.validate) = "maxLength=100", (dg.transform) = "truncate=50"];
-    string last_name  = 3 [(dg.validate) = "required,maxLength=1000,minLength=1", (dg.transform) = "truncate=50,hash"];
+    string last_name  = 3 [(dg.validate) = "maxLength=1000,minLength=1,required", (dg.transform) = "truncate=50,hash"];
 }
 
 message PersonOut {
@@ -92,11 +92,13 @@ In another terminal:
 
 ```bash
 # Run a Successful command
-curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' http://localhost:8080/person
-curl -X POST -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' --insecure https://localhost:8080/person
+curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' http://localhost:8080/person
+curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' -H "Origin: http://www.example.com" --verbose http://localhost:8080/person
+curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' --insecure https://localhost:8080/person
 
 # Run a Failing command
-curl -X POST -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
+curl -d '{"first_name":"Chet"}' http://localhost:8080/person
+curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 ```
 
 
@@ -109,6 +111,7 @@ curl -X POST -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [x] Continue refactoring templates
 - [x] Check for `required` tag first then continue in order
 - [] Use a logging package
-- [] Complete middleware
+- [x] CORS middleware
+- [] Check true/false on middleware
 - [] More docs
 - [] Create test repo

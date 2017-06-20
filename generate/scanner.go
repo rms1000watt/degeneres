@@ -71,6 +71,13 @@ func (s Scanner) FileState() State {
 			return nil
 		}
 
+		if isForwardSlash(r) {
+			r = s.read()
+			if isForwardSlash(r) {
+				s.scanComment()
+			}
+		}
+
 		r = s.read()
 	}
 
@@ -136,6 +143,13 @@ func (s Scanner) ServiceState() State {
 			return nil
 		}
 
+		if isForwardSlash(r) {
+			r = s.read()
+			if isForwardSlash(r) {
+				s.scanComment()
+			}
+		}
+
 		if isCloseCurleyBrace(r) {
 			s.Emit(Token{Name: TokenServiceDone})
 			return s.FileState
@@ -177,6 +191,13 @@ func (s Scanner) RPCState() State {
 			return nil
 		}
 
+		if isForwardSlash(r) {
+			r = s.read()
+			if isForwardSlash(r) {
+				s.scanComment()
+			}
+		}
+
 		if isCloseCurleyBrace(r) {
 			s.Emit(Token{Name: TokenRPCDone})
 			return s.ServiceState
@@ -210,6 +231,13 @@ func (s Scanner) MessageState() State {
 	for !isLetter(r) {
 		if isEOF(r) {
 			return nil
+		}
+
+		if isForwardSlash(r) {
+			r = s.read()
+			if isForwardSlash(r) {
+				s.scanComment()
+			}
 		}
 
 		if isCloseCurleyBrace(r) {
@@ -384,6 +412,21 @@ func (s Scanner) getSingleOption() (option []rune) {
 		option = append(option, r)
 	}
 	return
+}
+
+func (s Scanner) scanComment() {
+	for {
+		r := s.read()
+
+		if isEOF(r) {
+			s.unread()
+			break
+		}
+
+		if isNewline(r) {
+			break
+		}
+	}
 }
 
 func (s Scanner) getVal(runes ...rune) (val []rune) {
@@ -605,6 +648,10 @@ func isCloseSquareBracket(r rune) bool {
 
 func isComma(r rune) bool {
 	return r == ','
+}
+
+func isForwardSlash(r rune) bool {
+	return r == '/'
 }
 
 func isFieldRule(in string) bool {

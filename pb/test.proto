@@ -10,10 +10,12 @@ option (dg.project_name) = "Degeneres Test";
 option (dg.docker_path) = "docker.io/rms1000watt/degeneres-test";
 option (dg.import_path) = "github.com/rms1000watt/degeneres-test";
 
+option (dg.origins) = "http://localhost,http://127.0.0.1,http://www.example.com,https://localhost,https://127.0.0.1,https://www.example.com";
+
 service Ballpark {
     option (dg.short_description) = "Ballpark Service API for stadium information";
-    option (dg.middleware.cors) = "localhost,127.0.0.1,www.example.com";
     option (dg.middleware.no_cache) = true;
+    option (dg.middleware.cors) = true;
 
     rpc Person(PersonIn) returns (PersonOut) {
         option (dg.middleware.no_cache) = false;
@@ -33,7 +35,7 @@ service Ballpark {
 message PersonIn {
     int64 id                       = 1;
     string first_name              = 2 [(dg.validate) = "maxLength=100", (dg.transform) = "truncate=50"];
-    string last_name               = 3 [(dg.validate) = "required,maxLength=1000,minLength=1", (dg.transform) = "truncate=50,hash"];
+    string last_name               = 3 [(dg.validate) = "maxLength=1000,required,minLength=1", (dg.transform) = "truncate=50,hash"];
     address.Address address        = 4;
     repeated Attendance attendance = 5;
 }
