@@ -13,12 +13,21 @@ func {{.TitleCamel}}(cfg Config) {
     fmt.Println("{{.TitleCamel}} Config:", cfg)
     addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 
+    srv := http.Server{
+		Addr:              addr,
+		ReadTimeout:       30 * time.Second,
+		ReadHeaderTimeout: 10 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       30 * time.Second,
+		Handler:           ServerHandler(),
+	}
+
     if cfg.CertsPath != "" && cfg.CertName != "" && cfg.KeyName != "" {
         fmt.Println("Starting HTTPS server at:", addr)
-        log.Fatal(http.ListenAndServeTLS(addr, filepath.Join(cfg.CertsPath, cfg.CertName), filepath.Join(cfg.CertsPath, cfg.KeyName), ServerHandler()))
+        log.Fatal(srv.ListenAndServeTLS(filepath.Join(cfg.CertsPath, cfg.CertName), filepath.Join(cfg.CertsPath, cfg.KeyName)))
     } else {
         fmt.Println("Starting HTTP server at:", addr)
-        log.Fatal(http.ListenAndServe(addr, ServerHandler()))
+        log.Fatal(srv.ListenAndServe())
     }
 }
 
