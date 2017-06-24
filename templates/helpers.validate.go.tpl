@@ -38,10 +38,6 @@ func Validate(in interface{}) (msg string, err error) {
 				if vMsg := ValidateInt(param, int(v.Field(i).Elem().Int())); vMsg != "" {
 					return vMsg, nil
 				}
-			case TypeOfFloat32:
-				if vMsg := ValidateFloat32(param, float32(v.Field(i).Elem().Float())); vMsg != "" {
-					return vMsg, nil
-				}
 			case TypeOfFloat64:
 				if vMsg := ValidateFloat64(param, v.Field(i).Elem().Float()); vMsg != "" {
 					return vMsg, nil
@@ -92,23 +88,6 @@ func ValidateInt(param string, in int) (msg string) {
 		}
 	case ValidateStrLessThan:
 		if in > cast.ToInt(v) {
-			return ValidateStrLessThanErr
-		}
-	}
-
-	return
-}
-
-func ValidateFloat32(param string, in float32) (msg string) {
-	k, v := getTagKV(param)
-
-	switch k {
-	case ValidateStrGreaterThan:
-		if in < cast.ToFloat32(v) {
-			return ValidateStrGreaterThanErr
-		}
-	case ValidateStrLessThan:
-		if in > cast.ToFloat32(v) {
 			return ValidateStrLessThanErr
 		}
 	}

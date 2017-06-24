@@ -15,10 +15,8 @@ import (
 )
 
 const (
-	dirOut       = "out"
 	dirTemplates = "templates"
 	dirHelpers   = "helpers"
-	dirCmd       = "cmd"
 	extTpl       = ".tpl"
 )
 
@@ -56,8 +54,8 @@ func Generate(cfg Config) {
 		return
 	}
 
-	if err := os.Mkdir(dirOut, os.ModePerm); err != nil {
-		fmt.Printf("Directory: \"%s\" already exists. Continuing...\n", dirOut)
+	if err := os.Mkdir(cfg.OutPath, os.ModePerm); err != nil {
+		fmt.Printf("Directory: \"%s\" already exists. Continuing...\n", cfg.OutPath)
 	}
 
 	helperFileNames, err := getHelperFileNames()
@@ -68,7 +66,7 @@ func Generate(cfg Config) {
 
 	templates := getTemplates(dg)
 	for _, tpl := range templates {
-		if err := genFile(tpl, helperFileNames); err != nil {
+		if err := genFile(cfg, tpl, helperFileNames); err != nil {
 			fmt.Println("Failed generating template:", tpl.TemplateName, ":", err)
 		}
 	}
@@ -111,7 +109,7 @@ func UnmarshalFile(filePath string) (proto Proto, err error) {
 }
 
 func getHelperFileNames() (helperFileNames []string, err error) {
-	helperFiles, err := ioutil.ReadDir(filepath.Join(dirTemplates, dirHelpers))
+	helperFiles, err := ioutil.ReadDir(filepath.Join(build.Default.GOPATH, "src", "github.com", "rms1000watt", "degeneres", dirTemplates, dirHelpers))
 	if err != nil {
 		return
 	}
@@ -183,7 +181,7 @@ func getTemplates(dg Degeneres) (templates []Template) {
 	return
 }
 
-func genFile(tpl Template, helperFileNames []string) (err error) {
+func genFile(cfg Config, tpl Template, helperFileNames []string) (err error) {
 	templateName := tpl.TemplateName
 
 	templateNameArr := strings.Split(templateName, ".")
@@ -192,7 +190,7 @@ func genFile(tpl Template, helperFileNames []string) (err error) {
 		return errGenFail
 	}
 
-	templateFileName := filepath.Join(dirTemplates, tpl.FileName)
+	templateFileName := filepath.Join(build.Default.GOPATH, "src", "github.com", "rms1000watt", "degeneres", dirTemplates, tpl.FileName)
 	fileBytes, err := ioutil.ReadFile(templateFileName)
 	if err != nil {
 		fmt.Println("Failed reading template file:", err)
@@ -207,7 +205,7 @@ func genFile(tpl Template, helperFileNames []string) (err error) {
 
 	fullHelperFileNames := []string{}
 	for _, helperFileName := range helperFileNames {
-		fullHelperFileNames = append(fullHelperFileNames, filepath.Join(dirTemplates, helperFileName))
+		fullHelperFileNames = append(fullHelperFileNames, filepath.Join(build.Default.GOPATH, "src", "github.com", "rms1000watt", "degeneres", dirTemplates, helperFileName))
 	}
 
 	if _, err := t.ParseFiles(fullHelperFileNames...); err != nil {
@@ -223,7 +221,7 @@ func genFile(tpl Template, helperFileNames []string) (err error) {
 
 	// Make the required directories for the project
 	dirs := templateNameArr[:len(templateNameArr)-3]
-	dirs = append([]string{dirOut}, dirs...)
+	dirs = append([]string{cfg.OutPath}, dirs...)
 
 	if len(dirs) != 0 {
 		if err := os.MkdirAll(filepath.Join(dirs...), os.ModePerm); err != nil {

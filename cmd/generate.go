@@ -21,6 +21,7 @@ func init() {
 
 	generateCmd.Flags().StringVarP(&genCfg.ProtoFilePath, "proto-file", "f", "./pb/test.proto", "Protobuf filepath used for generation")
 	generateCmd.Flags().BoolVarP(&genCfg.Verbose, "verbose", "v", false, "Generator verbosity")
+	generateCmd.Flags().StringVarP(&genCfg.OutPath, "out-path", "o", "out", "Output path for the generated code")
 }
 
 func runGenerate(cmd *cobra.Command, args []string) {
