@@ -1,11 +1,13 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+var logLevel string
 
 var RootCmd = &cobra.Command{
 	Use:   "degeneres",
@@ -13,9 +15,19 @@ var RootCmd = &cobra.Command{
 	Long:  `Degeneres: Golang Microservice Generator using Protobuf`,
 }
 
+func init() {
+	RootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "debug", "Set log level (debug, info, error, fatal)")
+}
+
 func Execute() {
+	if level, err := log.ParseLevel(logLevel); err != nil {
+		log.Error("log-level argument malformed: ", logLevel)
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(level)
+	}
+
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
 		os.Exit(-1)
 	}
 }

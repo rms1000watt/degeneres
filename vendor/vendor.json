@@ -9,6 +9,18 @@
 			"revisionTime": "2016-10-29T20:57:26Z"
 		},
 		{
+			"checksumSHA1": "RZOdTSZN/PgcTqko5LzIAzw+UT4=",
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "792786c7400a136282c1664665ae0a8db921c6c2",
+			"revisionTime": "2016-01-10T10:55:54Z"
+		},
+		{
+			"checksumSHA1": "YtEQqAcs51d7NN7LZTxnd+jElYU=",
+			"path": "github.com/sirupsen/logrus",
+			"revision": "7dd06bf38e1e13df288d471a57d5adbac106be9e",
+			"revisionTime": "2017-06-30T00:54:20Z"
+		},
+		{
 			"checksumSHA1": "q8bZx+9lE3DkMPNso26LwW2BhDA=",
 			"path": "github.com/spf13/cobra",
 			"revision": "5deb57bbca49eb370538fc295ba4b2988f9f5e09",
@@ -19,6 +31,18 @@
 			"path": "github.com/spf13/pflag",
 			"revision": "9a906f17374922ed0f74e1b2f593d3723f2ffb00",
 			"revisionTime": "2017-04-05T14:18:32Z"
+		},
+		{
+			"checksumSHA1": "L8WNMYHKGlN21LnrVhG05OWxwAA=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "f6abca593680b2315d2075e0f5e2a9751e3f431a",
+			"revisionTime": "2017-06-01T20:57:54Z"
+		},
+		{
+			"checksumSHA1": "EL5tiYbzPcSM0nhJpvMSDnDNvxI=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "d18155cb60f6162f5e706d7f26e4e50a3d4da857",
+			"revisionTime": "2017-07-01T06:14:08Z"
 		}
 	],
 	"rootPath": "github.com/rms1000watt/degeneres"

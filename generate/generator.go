@@ -12,6 +12,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -40,11 +42,12 @@ var (
 )
 
 func Generate(cfg Config) {
-	fmt.Println("Starting Generation...")
+	log.Info("Starting generator")
+	defer log.Info("Generator done")
 
 	proto, err := UnmarshalFile(cfg.ProtoFilePath)
 	if err != nil {
-		fmt.Errorf("Failed scanning protofile: %s", err)
+		log.Error("Failed scanning protofile: ", err)
 		return
 	}
 
@@ -75,7 +78,8 @@ func Generate(cfg Config) {
 }
 
 func UnmarshalFile(filePath string) (proto Proto, err error) {
-	fmt.Println("Starting Unmarshal...", filePath)
+	log.Debug("Starting unmarshal: ", filePath)
+	defer log.Debug("Unmarshal done: ", filePath)
 
 	fileBytes, err := ioutil.ReadFile(filePath)
 	if err != nil {

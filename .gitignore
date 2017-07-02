@@ -9,3 +9,4 @@ certs/server.csr
 certs/server.key
 degeneres
 vendor/github.com
+vendor/golang.org
