@@ -1,4 +1,4 @@
-package generate
+package certs
 
 import (
 	"errors"
@@ -9,24 +9,19 @@ import (
 	"strings"
 )
 
-type CertsConfig struct {
-	CertsPath     string
-	OpensslConfig string
-}
-
-func Certs(certsCfg CertsConfig) {
+func Certs(cfg Config) {
 	fmt.Println("Generating certs...")
 
-	opensslConfig, err := filepath.Abs(certsCfg.OpensslConfig)
+	opensslConfig, err := filepath.Abs(cfg.OpensslConfig)
 	if err != nil {
 		fmt.Println("Failed getting absolute path:", err)
 		return
 	}
 
-	os.Mkdir(certsCfg.CertsPath, os.ModePerm)
+	os.Mkdir(cfg.OutputPath, os.ModePerm)
 
-	if err := os.Chdir(certsCfg.CertsPath); err != nil {
-		fmt.Println("Failed chdir to certsPath:", certsCfg.CertsPath)
+	if err := os.Chdir(cfg.OutputPath); err != nil {
+		fmt.Println("Failed chdir to outputPath:", cfg.OutputPath)
 		return
 	}
 

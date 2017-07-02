@@ -71,6 +71,10 @@ In one terminal:
 go get github.com/rms1000watt/degeneres
 cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres
 
+# Get vendored projects
+go get -u -v github.com/kardianos/govendor
+govendor sync
+
 # Generate self signed certs
 go run main.go generate certs
 
@@ -114,5 +118,6 @@ curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [] Use default Options method
 - [x] CORS middleware
 - [] Check true/false on middleware
+- [] Vendoring
 - [] More docs
 - [] Create test repo

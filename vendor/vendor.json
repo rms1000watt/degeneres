@@ -1,0 +1,25 @@
+{
+	"comment": "",
+	"ignore": "test, out",
+	"package": [
+		{
+			"checksumSHA1": "WRu+mhZ2PfQu27qRr69HVGjtN4Q=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "346938d642f2ec3594ed81d874461961cd0faa76",
+			"revisionTime": "2016-10-29T20:57:26Z"
+		},
+		{
+			"checksumSHA1": "q8bZx+9lE3DkMPNso26LwW2BhDA=",
+			"path": "github.com/spf13/cobra",
+			"revision": "5deb57bbca49eb370538fc295ba4b2988f9f5e09",
+			"revisionTime": "2017-04-08T14:45:37Z"
+		},
+		{
+			"checksumSHA1": "lADa/j8tKkrcamGGRI2OotvC8vU=",
+			"path": "github.com/spf13/pflag",
+			"revision": "9a906f17374922ed0f74e1b2f593d3723f2ffb00",
+			"revisionTime": "2017-04-05T14:18:32Z"
+		}
+	],
+	"rootPath": "github.com/rms1000watt/degeneres"
+}

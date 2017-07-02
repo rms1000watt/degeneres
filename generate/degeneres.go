@@ -54,6 +54,7 @@ var (
 )
 
 type Degeneres struct {
+	GeneratorVersion     string
 	Version              string `validate:"required"`
 	ImportPath           string `validate:"required"`
 	DockerPath           string

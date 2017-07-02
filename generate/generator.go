@@ -54,6 +54,8 @@ func Generate(cfg Config) {
 		return
 	}
 
+	dg.GeneratorVersion = getGeneratorVersion()
+
 	if err := os.Mkdir(cfg.OutPath, os.ModePerm); err != nil {
 		fmt.Printf("Directory: \"%s\" already exists. Continuing...\n", cfg.OutPath)
 	}
@@ -125,6 +127,7 @@ func getTemplates(dg Degeneres) (templates []Template) {
 		".gitignore.tpl",
 		"main.go.tpl",
 		"cmd.root.go.tpl",
+		"cmd.version.go.tpl",
 		"Readme.md.tpl",
 		"License..tpl",
 		"Dockerfile..tpl",
@@ -275,4 +278,12 @@ func RemoveUnusedFile(completeFilePath string) {
 			return
 		}
 	}
+}
+
+func getGeneratorVersion() string {
+	out, err := exec.Command("git", "rev-parse", "HEAD").CombinedOutput()
+	if err != nil {
+		return "Not sure: Broken git"
+	}
+	return strings.TrimSpace(string(out))
 }

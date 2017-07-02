@@ -8,3 +8,4 @@ certs/server.cer
 certs/server.csr
 certs/server.key
 degeneres
+vendor/github.com
