@@ -16,12 +16,10 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "debug", "Set log level (debug, info, warn, error, fatal)")
+	RootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "Set log level (debug, info, warn, error, fatal)")
 }
 
 func Execute() {
-	configureLogging()
-
 	if err := RootCmd.Execute(); err != nil {
 		log.Error(err)
 		os.Exit(-1)
@@ -31,7 +29,7 @@ func Execute() {
 func configureLogging() {
 	if level, err := log.ParseLevel(logLevel); err != nil {
 		log.Error("log-level argument malformed: ", logLevel, ": ", err)
-		log.SetLevel(log.DebugLevel)
+		log.SetLevel(log.InfoLevel)
 	} else {
 		log.SetLevel(level)
 	}

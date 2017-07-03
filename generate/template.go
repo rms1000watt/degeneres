@@ -73,7 +73,7 @@ func EmptyValue(dataType string) (out string) {
 	case DataTypeBool:
 		return "false"
 	}
-	log.Warn("DATA TYPE NOT DEFINED: ", dataType)
+	log.Warn("data type not defined: ", dataType)
 	return dataType + "{}"
 }
 
@@ -99,7 +99,7 @@ func GetHTTPMethod(method string) (httpMethod string) {
 	case "trace":
 		return "MethodTrace"
 	}
-	log.Warn("BAD METHOD PROVIDED: ", method)
+	log.Warn("Bad method provided: ", method)
 	return
 }
 

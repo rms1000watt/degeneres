@@ -19,14 +19,12 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "debug", "Set log level (debug, info, warn, error, fatal)")
+	RootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "Set log level (debug, info, warn, error, fatal)")
 
 	SetPFlagsFromEnv(RootCmd)
 }
 
 func Execute() {
-	configureLogging()
-
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
@@ -60,7 +58,7 @@ func SetFlagsFromEnv(cmd *cobra.Command) {
 func configureLogging() {
 	if level, err := log.ParseLevel(logLevel); err != nil {
 		log.Error("log-level argument malformed: ", logLevel, ": ", err)
-		log.SetLevel(log.DebugLevel)
+		log.SetLevel(log.InfoLevel)
 	} else {
 		log.SetLevel(level)
 	}

@@ -29,5 +29,7 @@ func init() {
 }
 
 func run{{.TitleCamel}}(cmd *cobra.Command, args []string) {
+	configureLogging()
+	
 	{{.Camel}}.{{.TitleCamel}}({{.Camel}}Cfg)
 }

@@ -18,8 +18,8 @@ type Scanner struct {
 }
 
 func Scan(fileBytes []byte) (tokens chan Token) {
-	log.Info("Starting scanner")
-	defer log.Info("Scanner done")
+	log.Debug("Starting scanner")
+	defer log.Debug("Scanner done")
 
 	tokens = make(chan Token)
 	s := NewScanner(fileBytes, tokens)

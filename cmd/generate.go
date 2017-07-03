@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/rms1000watt/degeneres/generate"
-
 	"github.com/spf13/cobra"
 )
 
@@ -25,5 +24,7 @@ func init() {
 }
 
 func runGenerate(cmd *cobra.Command, args []string) {
+	configureLogging()
+
 	generate.Generate(genCfg)
 }

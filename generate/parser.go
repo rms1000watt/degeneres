@@ -7,8 +7,8 @@ import (
 )
 
 func Parse(tokens chan Token) (proto Proto) {
-	log.Info("Staring parser")
-	defer log.Info("Parser done")
+	log.Debug("Staring parser")
+	defer log.Debug("Parser done")
 
 	proto = NewProto()
 

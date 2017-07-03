@@ -22,5 +22,7 @@ func init() {
 }
 
 func runCerts(cmd *cobra.Command, args []string) {
+	configureLogging()
+
 	certs.Certs(certsCfg)
 }

@@ -42,8 +42,8 @@ var (
 )
 
 func Generate(cfg Config) {
-	log.Info("Starting generator")
-	defer log.Info("Generator done")
+	log.Debug("Starting generator")
+	defer log.Debug("Generator done")
 
 	proto, err := UnmarshalFile(cfg.ProtoFilePath)
 	if err != nil {
@@ -94,7 +94,7 @@ func UnmarshalFile(filePath string) (proto Proto, err error) {
 	for _, importFilepath := range proto.Imports {
 		cnt++
 		if cnt > 100 {
-			log.Info("Greater than 100 imports.. recursive import?")
+			log.Warn("Greater than 100 imports.. recursive import?")
 			break
 		}
 		filePath := filepath.Join(build.Default.GOPATH, "src", importFilepath)

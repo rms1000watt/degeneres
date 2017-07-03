@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/davecgh/go-spew/spew"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -188,7 +189,7 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 
 	services := []DgService{}
 	for _, service := range proto.Services {
-		spew.Dump(genName(service.Name))
+		log.Debug(spew.Sdump(genName(service.Name)))
 
 		longDescription := ""
 		shortDescription := ""

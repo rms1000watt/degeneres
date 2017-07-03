@@ -2,15 +2,16 @@ package {{.Camel}}
 
 import (
     "fmt"
-    "log"
 	"net/http"
 	"path/filepath"
     
     "{{.ImportPath}}/helpers"
+
+    log "github.com/sirupsen/logrus"
 )
 
 func {{.TitleCamel}}(cfg Config) {
-    fmt.Println("{{.TitleCamel}} Config:", cfg)
+    log.Debug("{{.TitleCamel}} Config: ", cfg)
     addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 
     srv := http.Server{
@@ -23,10 +24,10 @@ func {{.TitleCamel}}(cfg Config) {
 	}
 
     if cfg.CertsPath != "" && cfg.CertName != "" && cfg.KeyName != "" {
-        fmt.Println("Starting HTTPS server at:", addr)
+        log.Info("Starting HTTPS server at: ", addr)
         log.Fatal(srv.ListenAndServeTLS(filepath.Join(cfg.CertsPath, cfg.CertName), filepath.Join(cfg.CertsPath, cfg.KeyName)))
     } else {
-        fmt.Println("Starting HTTP server at:", addr)
+        log.Info("Starting HTTP server at: ", addr)
         log.Fatal(srv.ListenAndServe())
     }
 }
