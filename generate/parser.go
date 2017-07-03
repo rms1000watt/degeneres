@@ -1,12 +1,14 @@
 package generate
 
 import (
-	"fmt"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func Parse(tokens chan Token) (proto Proto) {
-	fmt.Println("Starting Parser...")
+	log.Info("Staring parser")
+	defer log.Info("Parser done")
 
 	proto = NewProto()
 

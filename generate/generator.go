@@ -53,26 +53,26 @@ func Generate(cfg Config) {
 
 	dg, err := NewDegeneres(proto)
 	if err != nil {
-		fmt.Println("Failed converting to degeneres format:", err)
+		log.Error("Failed converting to degeneres format: ", err)
 		return
 	}
 
 	dg.GeneratorVersion = getGeneratorVersion()
 
 	if err := os.Mkdir(cfg.OutPath, os.ModePerm); err != nil {
-		fmt.Printf("Directory: \"%s\" already exists. Continuing...\n", cfg.OutPath)
+		log.Errorf("Directory: \"%s\" already exists. Continuing...\n", cfg.OutPath)
 	}
 
 	helperFileNames, err := getHelperFileNames()
 	if err != nil {
-		fmt.Println("Failed reading helper files:", err)
+		log.Error("Failed reading helper files: ", err)
 		return
 	}
 
 	templates := getTemplates(dg)
 	for _, tpl := range templates {
 		if err := genFile(cfg, tpl, helperFileNames); err != nil {
-			fmt.Println("Failed generating template:", tpl.TemplateName, ":", err)
+			log.Error("Failed generating template: ", tpl.TemplateName, ": ", err)
 		}
 	}
 }
@@ -83,7 +83,7 @@ func UnmarshalFile(filePath string) (proto Proto, err error) {
 
 	fileBytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		fmt.Errorf("Failed reading file: %s: %s", filePath, err)
+		log.Errorf("Failed reading file: %s: %s", filePath, err)
 		return
 	}
 
@@ -94,13 +94,13 @@ func UnmarshalFile(filePath string) (proto Proto, err error) {
 	for _, importFilepath := range proto.Imports {
 		cnt++
 		if cnt > 100 {
-			fmt.Println("Greater than 100 imports.. recursive import?")
+			log.Info("Greater than 100 imports.. recursive import?")
 			break
 		}
 		filePath := filepath.Join(build.Default.GOPATH, "src", importFilepath)
 		importedProto, err := UnmarshalFile(filePath)
 		if err != nil {
-			fmt.Println("Failed unmarshalling file:", err)
+			log.Error("Failed unmarshalling file: ", err)
 			break
 		}
 
@@ -193,20 +193,20 @@ func genFile(cfg Config, tpl Template, helperFileNames []string) (err error) {
 
 	templateNameArr := strings.Split(templateName, ".")
 	if len(templateNameArr) < 3 {
-		fmt.Println("Bad templateName provided:", templateName)
+		log.Error("Bad templateName provided: ", templateName)
 		return errGenFail
 	}
 
 	templateFileName := filepath.Join(build.Default.GOPATH, "src", "github.com", "rms1000watt", "degeneres", dirTemplates, tpl.FileName)
 	fileBytes, err := ioutil.ReadFile(templateFileName)
 	if err != nil {
-		fmt.Println("Failed reading template file:", err)
+		log.Error("Failed reading template file: ", err)
 		return
 	}
 
 	t, err := template.New(templateName).Funcs(funcMap).Parse(string(fileBytes))
 	if err != nil {
-		fmt.Println("Failed parsing template:", err)
+		log.Error("Failed parsing template: ", err)
 		return errGenFail
 	}
 
@@ -216,13 +216,13 @@ func genFile(cfg Config, tpl Template, helperFileNames []string) (err error) {
 	}
 
 	if _, err := t.ParseFiles(fullHelperFileNames...); err != nil {
-		fmt.Println("Failed parsing template:", err)
+		log.Error("Failed parsing template: ", err)
 		return errGenFail
 	}
 
 	var outBuffer bytes.Buffer
 	if err := t.Execute(&outBuffer, tpl.Data); err != nil {
-		fmt.Println("Failed executing template:", err)
+		log.Error("Failed executing template: ", err)
 		return errGenFail
 	}
 
@@ -232,7 +232,7 @@ func genFile(cfg Config, tpl Template, helperFileNames []string) (err error) {
 
 	if len(dirs) != 0 {
 		if err := os.MkdirAll(filepath.Join(dirs...), os.ModePerm); err != nil {
-			fmt.Println("Failed mkdir on dirs:", dirs, ":", err)
+			log.Error("Failed mkdir on dirs: ", dirs, ": ", err)
 			return errGenFail
 		}
 	}
@@ -246,13 +246,13 @@ func genFile(cfg Config, tpl Template, helperFileNames []string) (err error) {
 	}
 
 	if _, err := os.Stat(completeFilePath); err == nil {
-		fmt.Println("NO overwrite, file exists:", completeFilePath)
+		log.Info("NO overwrite, file exists: ", completeFilePath)
 		return nil
 	}
 
-	fmt.Println("Writing:", completeFilePath)
+	log.Info("Writing: ", completeFilePath)
 	if err := ioutil.WriteFile(completeFilePath, outBuffer.Bytes(), os.ModePerm); err != nil {
-		fmt.Println("Failed writing file:", err)
+		log.Error("Failed writing file: ", err)
 		return errGenFail
 	}
 

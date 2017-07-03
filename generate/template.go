@@ -1,8 +1,9 @@
 package generate
 
 import (
-	"fmt"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -72,7 +73,7 @@ func EmptyValue(dataType string) (out string) {
 	case DataTypeBool:
 		return "false"
 	}
-	fmt.Println("DATA TYPE NOT DEFINED:", dataType)
+	log.Warn("DATA TYPE NOT DEFINED: ", dataType)
 	return dataType + "{}"
 }
 
@@ -98,8 +99,7 @@ func GetHTTPMethod(method string) (httpMethod string) {
 	case "trace":
 		return "MethodTrace"
 	}
-
-	fmt.Println("BAD METHOD PROVIDED!!", method)
+	log.Warn("BAD METHOD PROVIDED: ", method)
 	return
 }
 

@@ -2,9 +2,10 @@ package generate
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -29,7 +30,7 @@ func Validate(in interface{}) (err error) {
 
 		params := strings.Split(tag, ",")
 		for _, param := range params {
-			fmt.Printf("Validating: %s - %s\n", v.Type().Field(i).Name, param)
+			log.Debugf("Validating: %s - %s", v.Type().Field(i).Name, param)
 
 			if param == ValidateRequired {
 				if v.Field(i).String() == "" {

@@ -118,6 +118,7 @@ curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [] Use default Options method
 - [x] CORS middleware
 - [] Check true/false on middleware
-- [] Vendoring
+- [] Vendoring in generated code
+- [] More middleware: hsts, ssl redirect, xss protection, method logging
 - [] More docs
 - [] Create test repo

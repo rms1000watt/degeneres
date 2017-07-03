@@ -2,8 +2,9 @@ package generate
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var eof = rune(0)
@@ -17,7 +18,8 @@ type Scanner struct {
 }
 
 func Scan(fileBytes []byte) (tokens chan Token) {
-	fmt.Println("Starting Scan...")
+	log.Info("Starting scanner")
+	defer log.Info("Scanner done")
 
 	tokens = make(chan Token)
 	s := NewScanner(fileBytes, tokens)
@@ -49,7 +51,7 @@ func (s Scanner) read() rune {
 	r, _, err := s.InputBuf.ReadRune()
 	if err != nil {
 		if err.Error() != "EOF" {
-			fmt.Println("Failed reading rune:", err)
+			log.Error("Failed reading rune: ", err)
 		}
 		return eof
 	}
@@ -59,7 +61,7 @@ func (s Scanner) read() rune {
 func (s Scanner) unread() {
 	err := s.InputBuf.UnreadRune()
 	if err != nil {
-		fmt.Println("Failed unreading rune:", err)
+		log.Error("Failed unreading rune: ", err)
 	}
 }
 

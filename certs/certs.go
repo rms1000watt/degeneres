@@ -7,21 +7,24 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func Certs(cfg Config) {
-	fmt.Println("Generating certs...")
+	log.Info("Generating certs")
+	defer log.Info("Done generating certs")
 
 	opensslConfig, err := filepath.Abs(cfg.OpensslConfig)
 	if err != nil {
-		fmt.Println("Failed getting absolute path:", err)
+		log.Error("Failed getting absolute path: ", err)
 		return
 	}
 
 	os.Mkdir(cfg.OutputPath, os.ModePerm)
 
 	if err := os.Chdir(cfg.OutputPath); err != nil {
-		fmt.Println("Failed chdir to outputPath:", cfg.OutputPath)
+		log.Error("Failed chdir to outputPath: ", cfg.OutputPath)
 		return
 	}
 
@@ -67,7 +70,7 @@ func execute(cmd string) (err error) {
 	fmt.Println(string(outBytes))
 
 	if err != nil {
-		fmt.Printf("Failed executing cmd: '%s': %s\n", cmd, err)
+		log.Errorf("Failed executing cmd: '%s': %s\n", cmd, err)
 		return err
 	}
 
