@@ -20,7 +20,7 @@ func {{.TitleCamel}}Handler(w http.ResponseWriter, r *http.Request) {
 		{{range $method := .Methods}}case http.Method{{$method.TitleCamel}}:
 			helpers.HandleMiddlewares({{$.TitleCamel}}Handler{{$method.UpperCamel}}, {{$.MiddlewareNames}})(w, r)
 		{{end}}default:
-			log.Info("Method not allowed: ", r.Method)
+			log.Debug("Method not allowed: ", r.Method)
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 	}
 	{{else}}

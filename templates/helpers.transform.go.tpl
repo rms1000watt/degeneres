@@ -5,12 +5,13 @@ import (
 	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
+	"errors"
 	"reflect"
 	"strings"
 
 	"github.com/magical/argon2"
 	"github.com/spf13/cast"
+	log "github.com/sirupsen/logrus"
 )
 
 func Transform(in interface{}) (err error) {
@@ -26,7 +27,7 @@ func Transform(in interface{}) (err error) {
 
 		params := strings.Split(tag, ",")
 		for _, param := range params {
-			fmt.Printf("Transforming: %s - %s\n", v.Type().Field(i).Name, param)
+			log.Debugf("Transforming: %s - %s", v.Type().Field(i).Name, param)
 
 			key, val := getTagKV(param)
 			if v.Field(i).Pointer() == 0 && key == TransformStrDefault {
@@ -61,13 +62,13 @@ func SetDefaultValue(value reflect.Value, defaultStr string) (err error) {
 	case TypeOfIntP:
 		value.Elem().SetInt(cast.ToInt64(defaultStr))
 	case TypeOfFloat32P:
-		fmt.Println("Unable to set default: Float32")
+		err = errors.New("Unable to set default: Float32")
 	case TypeOfFloat64P:
 		value.Elem().SetFloat(cast.ToFloat64(defaultStr))
 	case TypeOfBoolP:
 		value.Elem().SetBool(cast.ToBool(defaultStr))
 	default:
-		fmt.Println("Unable to set default: no type defined")
+		err = errors.New("Unable to set default: no type defined")
 	}
 	return
 }
@@ -84,7 +85,7 @@ func TransformString(param string, value reflect.Value) (err error) {
 			return
 		}
 		if err := EncryptReflectValue(value); err != nil {
-			fmt.Println("Failed Encryption...")
+			log.Debug("Failed Encryption...")
 			return err
 		}
 	case TransformStrDecrypt:
@@ -92,7 +93,7 @@ func TransformString(param string, value reflect.Value) (err error) {
 			return
 		}
 		if err := DecryptReflectValue(value); err != nil {
-			fmt.Println("Failed Decryption...")
+			log.Debug("Failed Decryption...")
 			return err
 		}
 	case TransformStrTrimChars:
@@ -110,7 +111,7 @@ func TransformString(param string, value reflect.Value) (err error) {
 			return
 		}
 		if err := PasswordHashReflectValue(value); err != nil {
-			fmt.Println("Failed Password Hashing..")
+			log.Debug("Failed Password Hashing..")
 			return err
 		}
 	}
@@ -119,7 +120,7 @@ func TransformString(param string, value reflect.Value) (err error) {
 }
 
 func EncryptReflectValue(value reflect.Value) (err error) {
-	fmt.Println("DONT USE THIS KEY IN PRODUCTION.. FETCH KEY FROM PKI")
+	log.Warn("DONT USE THIS KEY IN PRODUCTION.. FETCH KEY FROM PKI")
 	key := []byte("AES256Key-32Characters1234567890")
 
 	block, err := aes.NewCipher(key)
@@ -128,7 +129,7 @@ func EncryptReflectValue(value reflect.Value) (err error) {
 	}
 
 	nonce := []byte("DON'T USE ME")
-	fmt.Println("DONT USE THIS NONCE IN PRODUCTION.. GENERATE AND STORE RANDOM ONE")
+	log.Warn("DONT USE THIS NONCE IN PRODUCTION.. GENERATE AND STORE RANDOM ONE")
 	// Never use more than 2^32 random nonces with a given key because of the risk of a repeat.
 	// nonce := make([]byte, 12)
 	// if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
@@ -147,7 +148,7 @@ func EncryptReflectValue(value reflect.Value) (err error) {
 }
 
 func DecryptReflectValue(value reflect.Value) (err error) {
-	fmt.Println("DONT USE THIS KEY IN PRODUCTION.. FETCH KEY FROM PKI")
+	log.Warn("DONT USE THIS KEY IN PRODUCTION.. FETCH KEY FROM PKI")
 	key := []byte("AES256Key-32Characters1234567890")
 	ciphertext, err := hex.DecodeString(value.String())
 	if err != nil {
@@ -155,7 +156,7 @@ func DecryptReflectValue(value reflect.Value) (err error) {
 	}
 
 	nonce := []byte("DON'T USE ME")
-	fmt.Println("DONT USE THIS NONCE IN PRODUCTION.. FETCH THE ONE FOR THIS ENTRY")
+	log.Warn("DONT USE THIS NONCE IN PRODUCTION.. FETCH THE ONE FOR THIS ENTRY")
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -179,12 +180,12 @@ func DecryptReflectValue(value reflect.Value) (err error) {
 func PasswordHashReflectValue(value reflect.Value) (err error) {
 	salt, err := getRandomSalt()
 	if err != nil {
-		fmt.Println("Failed getting random salt:", err)
+		log.Debug("Failed getting random salt")
 		return err
 	}
 	key, err := argon2.Key([]byte(value.String()), []byte(salt), 2<<14-1, 1, 8, 64)
 	if err != nil {
-		fmt.Println("Failed to get argon2 key:", err)
+		log.Debug("Failed to get argon2 key")
 		return err
 	}
 	// Store these if you need to verify later

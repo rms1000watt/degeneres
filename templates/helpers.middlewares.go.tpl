@@ -1,8 +1,10 @@
 package helpers
 
 import (
-	"fmt"
 	"net/http"
+	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var CORSOrigins = []string{ 
@@ -26,10 +28,11 @@ func MiddlewareNoCache(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func MiddlewareLogging(fn http.HandlerFunc) http.HandlerFunc {
+func MiddlewareLogger(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-        // NOP for now...
+        start := time.Now()
 		fn(w, r)
+		log.Debugf("%s %s %s", r.Method, r.URL.Path, time.Since(start))
 	}
 }
 
@@ -44,10 +47,10 @@ func MiddlewareAllows(fn http.HandlerFunc) http.HandlerFunc {
 
 func MiddlewareCORS(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Origin:", r.Header.Get("Origin"))
+		log.Debug("CORS: Request Origin:", r.Header.Get("Origin"))
 
 		if len(CORSOrigins) == 0 {
-			fmt.Println("No CORS Origins defined, but CORS middleware called. No header write.")
+			log.Debug("No CORS Origins defined, but CORS middleware called. No header write.")
 			fn(w, r)
 			return
 		}

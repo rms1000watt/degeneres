@@ -1,11 +1,11 @@
 package helpers
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
 	"github.com/spf13/cast"
+	log "github.com/sirupsen/logrus"
 )
 
 func Validate(in interface{}) (msg string, err error) {
@@ -27,7 +27,7 @@ func Validate(in interface{}) (msg string, err error) {
 
 		params := strings.Split(tag, ",")
 		for _, param := range params {
-			fmt.Printf("Validating: %s - %s\n", v.Type().Field(i).Name, param)
+			log.Debugf("Validating: %s - %s", v.Type().Field(i).Name, param)
 
 			switch v.Field(i).Elem().Type() {
 			case TypeOfString:

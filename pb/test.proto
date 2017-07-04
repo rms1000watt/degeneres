@@ -16,6 +16,7 @@ service Ballpark {
     option (dg.short_description) = "Ballpark Service API for stadium information";
     option (dg.middleware.no_cache) = true;
     option (dg.middleware.cors) = true;
+    option (dg.middleware.logger) = true;
 
     rpc Person(PersonIn) returns (PersonOut) {
         option (dg.middleware.no_cache) = false;

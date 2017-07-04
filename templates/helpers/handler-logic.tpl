@@ -1,10 +1,10 @@
 {{$.Input.Camel}}, err := data.Get{{$.Input.TitleCamel}}(r)
 if err != nil {
-    fmt.Println(err)
+    log.Error(err)
     http.Error(w, helpers.ErrorJSON(err.Error()), http.StatusInternalServerError)
     return
 }
-fmt.Println({{$.Input.Camel}})
+log.Debug({{$.Input.Camel}})
 
 {{$.Output.Camel}} := data.{{$.Output.TitleCamel}}{}
 

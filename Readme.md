@@ -114,7 +114,7 @@ curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [x] Identify if message is input & create inputP
 - [x] Continue refactoring templates
 - [x] Check for `required` tag first then continue in order
-- [] Use a logging package
+- [x] Use a logging package
 - [] Use default Options method
 - [x] CORS middleware
 - [] Check true/false on middleware

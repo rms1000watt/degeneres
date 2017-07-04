@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cast"
+	log "github.com/sirupsen/logrus"
 )
 
 func Unmarshal(r *http.Request, dst interface{}) (err error) {
@@ -54,16 +55,16 @@ func Unmarshal(r *http.Request, dst interface{}) (err error) {
 			case TypeOfFloat64P:
 				v.Field(i).Elem().SetFloat(cast.ToFloat64(formValue))
 			case TypeOfFloat32P:
-				fmt.Println("Float32 not supported")
-				fallthrough
+				return errors.New("Float32 not supported")
 			default:
-				fmt.Println("Field not set:", v.Type().Field(i).Name)
+				return errors.New(fmt.Sprint("Field not set:", v.Type().Field(i).Name))
 			}
 		}
 		return
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(dst); err != nil {
+		log.Debug("Error decoding r.Body")
 		return err
 	}
 

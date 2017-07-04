@@ -6,7 +6,6 @@ import (
 	"path/filepath"
     
     "{{.ImportPath}}/helpers"
-
     log "github.com/sirupsen/logrus"
 )
 

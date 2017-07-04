@@ -2,10 +2,10 @@ package data
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"{{.ImportPath}}/helpers"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -23,7 +23,7 @@ type {{$input.TitleCamel}} struct {
 func Get{{MinusP $message.TitleCamel}}(r *http.Request) ({{MinusP $message.Camel}} {{MinusP $message.TitleCamel}}, err error) {
 	inputP := &{{$message.TitleCamel}}{}
 	if err := helpers.Unmarshal(r, inputP); err != nil {
-		fmt.Println("Failed decoding input:", err)
+		log.Error("Failed decoding input:", err)
 		return {{MinusP $message.Camel}}, ErrFailedDecodingInput
 	}
 
