@@ -41,11 +41,16 @@ func MiddlewareLogger(fn http.HandlerFunc) http.HandlerFunc {
 func MiddlewareSecure(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TLS Redirect
-		if !strings.EqualFold(r.URL.Scheme, "https") {
+		if !strings.EqualFold(r.URL.Scheme, "https") && r.TLS == nil {
+			if !r.URL.IsAbs() {
+				r.URL.Host = r.Host
+			} 
+
 			r.URL.Scheme = "https"
 
-			log.Debug("MW Secure: Redirecting to ", r.URL)
+			log.Debug("Secure Redirecting to ", r.URL)
 			http.Redirect(w, r, r.URL.String(), http.StatusMovedPermanently)
+			return
 		}
 
 		// HSTS: add "preload" for additional security https://www.owasp.org/index.php/HTTP_Strict_Transport_Security_Cheat_Sheet
@@ -66,7 +71,7 @@ func MiddlewareSecure(fn http.HandlerFunc) http.HandlerFunc {
 
 func MiddlewareCORS(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("MW CORS: Request Origin:", r.Header.Get("Origin"))
+		log.Debug("CORS Request Origin: ", r.Header.Get("Origin"))
 
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token")
@@ -84,7 +89,7 @@ func MiddlewareCORS(fn http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		log.Debug("CORS: Bad Host")
+		log.Debug("CORS Bad Host")
 		http.Error(w, "Bad Host", http.StatusInternalServerError)
 	}
 }

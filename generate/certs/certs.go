@@ -12,8 +12,8 @@ import (
 )
 
 func Certs(cfg Config) {
-	log.Info("Generating certs")
-	defer log.Info("Done generating certs")
+	log.Debug("Generating certs")
+	defer log.Debug("Done generating certs")
 
 	opensslConfig, err := filepath.Abs(cfg.OpensslConfig)
 	if err != nil {
@@ -40,7 +40,7 @@ func Certs(cfg Config) {
 		os.Remove(key)
 	}
 
-	// # Courtesy of https://github.com/deckarep/EasyCert
+	// Courtesy of https://github.com/deckarep/EasyCert
 	cmds := []string{
 		// "openssl genrsa -out ca.key 4096",
 		// `openssl req -x509 -new -key ca.key -out ca.cer -days 90 -subj /CN="rms1000watt"`,

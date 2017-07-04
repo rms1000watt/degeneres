@@ -118,8 +118,8 @@ PROJECT_PATH=$(go env GOPATH)/src/github.com/rms1000watt/degeneres-test bash -c 
 cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres-test
 
 # Run the project with or without TLS
-cd ../degeneres-test; clear; go run main.go ballpark
-cd ../degeneres-test; clear; go run main.go ballpark --certs-path ./keys --cert-name server.cer --key-name server.key
+cd ../degeneres-test; clear; go run main.go ballpark --log-level debug
+cd ../degeneres-test; clear; go run main.go ballpark --log-level debug --certs-path ./certs --cert-name server.cer --key-name server.key
 ```
 
 In another terminal:
@@ -127,11 +127,11 @@ In another terminal:
 ```bash
 # Run a Successful command
 curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' -H "Origin: http://www.example.com" -D - http://localhost:8080/person
-curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' -H "Origin: http://www.example.com" --insecure https://localhost:8080/person
+curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' -H "Origin: https://www.example.com" -D - --insecure https://localhost:8080/person
 
 # Run a Failing command
 curl -d '{"first_name":"Chet"}' http://localhost:8080/person
-curl -d '{"first_name":"Chet"}'  -H "Origin: http://www.example.com" http://localhost:8080/person
+curl -d '{"first_name":"Chet"}' -H "Origin: http://www.example.com" http://localhost:8080/person
 curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 ```
 
@@ -147,7 +147,7 @@ curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [x] CORS middleware
 - [ ] Check true/false on middleware
 - [ ] Vendoring in generated code
-- [ ] More middleware: hsts, ssl redirect, xss protection, method logging
+- [x] More middleware: hsts, ssl redirect, xss protection, method logging
 - [ ] More docs
 - [ ] Test protobuf with gRPC
 - [ ] Generate unit tests

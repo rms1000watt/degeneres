@@ -28,12 +28,14 @@ const (
 	OptionMiddlewareCORS       = "middleware.cors"
 	OptionMiddlewareNoCache    = "middleware.no_cache"
 	OptionMiddlewareLogger     = "middleware.logger"
+	OptionMiddlewareSecure     = "middleware.secure"
 	OptionMethod               = "method"
 	OptionOrigins              = "origins"
 
 	MiddlewareCORS    = "CORS"
 	MiddlewareNoCache = "NoCache"
 	MiddlewareLogger  = "Logger"
+	MiddlewareSecure  = "Secure"
 )
 
 var (
@@ -265,6 +267,8 @@ func getMiddlewares(options []Option) (map[string]string, string) {
 			middlewareName = genName(MiddlewareNoCache)
 		case OptionMiddlewareLogger:
 			middlewareName = genName(MiddlewareLogger)
+		case OptionMiddlewareSecure:
+			middlewareName = genName(MiddlewareSecure)
 		default:
 			continue
 		}
