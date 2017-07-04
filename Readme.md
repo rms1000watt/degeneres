@@ -1,6 +1,36 @@
 ## Degeneres
 
-Degeneres, the Golang Code generator. Use Protobuf definitions to generate complete microservices (not using RPC).
+Degeneres, the microservice generator. Use Protobuf definitions to generate complete REST-like microservices in Golang.
+
+### Motivation
+
+gRPC is a brilliant system: describe data and services in Protobuf definitions that are used to generate servers in the language of your choosing. Need to make a change to the data or service? Update the Protobufs, regenerate the servers, rinse, repeat. This has been a fantastic workflow in production environments.
+
+The only downside at the moment is the gRPC ecosystem isn't readily available to many web toolsets & systems people use regularly like Postman, cURL, Angular/React, legacy/production JSON servers, etc. (although this will change in short order as the development of gRPC-web has been active for some time). So, Degeneres solves this by changing the data serialization from Protobuf to JSON and exposes REST-like endpoints.
+
+Also, for convenience and the reduction of hand-typed boilerplate, input data validation & transformation have been added along with configurable middleware at the service or endpoint levels.
+
+Finally, there is no way for the templates and configurable parameters to fit everyones' needs. The templates and configurable parameters have been written to hit a sweet spot between ease-of-use and excessiveness. So, to fit your needs--please fork the project and adjust accordingly. Degeneres should be incorporated into your development workflow; **generate the boilerplate**, don't write it.
+
+### Features
+
+- Protobuf data/service configuration
+- Input validation on `json` tags
+- Input transformation on `json` tags
+- CLI Commander (spf13/cobra)
+- Middleware (security, logging, cors, no-cache)
+- Self signed key generation
+- Vendored libraries
+
+### Limitations
+
+- Golang server generation only
+- Less performant than gRPC (JSON vs Protobuf)
+- Not production ready
+
+### Example
+
+Take an input protobuf file and generate your full API
 
 ```proto
 syntax = "proto3";
@@ -87,25 +117,23 @@ PROJECT_PATH=$(go env GOPATH)/src/github.com/rms1000watt/degeneres-test bash -c 
 # Go to the test directory
 cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres-test
 
-# Run the project 
+# Run the project with or without TLS
 cd ../degeneres-test; clear; go run main.go ballpark
-cd ../degeneres-test; clear; go run main.go ballpark --certs-path ./certs --cert-name server.cer --key-name server.key
+cd ../degeneres-test; clear; go run main.go ballpark --certs-path ./keys --cert-name server.cer --key-name server.key
 ```
 
 In another terminal:
 
 ```bash
 # Run a Successful command
-curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' http://localhost:8080/person
-curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' -H "Origin: http://www.example.com" --verbose http://localhost:8080/person
-curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' --insecure https://localhost:8080/person
+curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' -H "Origin: http://www.example.com" -D - http://localhost:8080/person
+curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' -H "Origin: http://www.example.com" --insecure https://localhost:8080/person
 
 # Run a Failing command
 curl -d '{"first_name":"Chet"}' http://localhost:8080/person
+curl -d '{"first_name":"Chet"}'  -H "Origin: http://www.example.com" http://localhost:8080/person
 curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 ```
-
-
 
 ### TODO
 
@@ -115,10 +143,12 @@ curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [x] Continue refactoring templates
 - [x] Check for `required` tag first then continue in order
 - [x] Use a logging package
-- [] Use default Options method
+- [ ] Use default Options method
 - [x] CORS middleware
-- [] Check true/false on middleware
-- [] Vendoring in generated code
-- [] More middleware: hsts, ssl redirect, xss protection, method logging
-- [] More docs
-- [] Create test repo
+- [ ] Check true/false on middleware
+- [ ] Vendoring in generated code
+- [ ] More middleware: hsts, ssl redirect, xss protection, method logging
+- [ ] More docs
+- [ ] Test protobuf with gRPC
+- [ ] Generate unit tests
+- [ ] Create test repo
