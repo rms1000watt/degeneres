@@ -17,8 +17,8 @@ go run main.go
 ### Deploy
 
 ```sh
-go build
-docker build --rm -t --no-cache {{.DockerPath}}:{{.Version}} .
+GOOS=linux go build
+docker build --rm --no-cache -t {{.DockerPath}}:{{.Version}} .
 docker push {{.DockerPath}}:{{.Version}}
 ```
 
