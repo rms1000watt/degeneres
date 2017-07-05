@@ -262,7 +262,7 @@ func RemoveUnusedFile(completeFilePath string) {
 
 	// if !bytes.Contains(bytes.TrimSpace(fileBytes), []byte("\n")) && bytes.Equal(fileBytes[:7], []byte("package")) {
 	if !bytes.Contains(bytes.TrimSpace(fileBytes), []byte("\n")) {
-		fmt.Println("Removing:", completeFilePath)
+		log.Info("Removing:", completeFilePath)
 		if err := os.Remove(completeFilePath); err != nil {
 			// Fail silently.. not a big deal
 			return
