@@ -2,16 +2,6 @@
 
 Degeneres, the microservice generator. Use Protobuf definitions to generate complete REST-like microservices in Golang.
 
-### Motivation
-
-gRPC is a brilliant system: describe data and services in Protobuf definitions that are used to generate servers in the language of your choosing. Need to make a change to the data or service? Update the Protobufs, regenerate the servers, rinse, repeat. This has been a fantastic workflow in production environments.
-
-The only downside at the moment is the gRPC ecosystem isn't readily available to many web toolsets & systems people use regularly like Postman, cURL, Angular/React, legacy/production JSON servers, etc. (although this will change in short order as the development of gRPC-web has been active for some time). So, Degeneres solves this by changing the data serialization from Protobuf to JSON and exposing REST-like endpoints.
-
-Also, for convenience and the reduction of hand-typed boilerplate, input data validation & transformation have been added along with configurable middleware at the service or endpoint levels.
-
-Finally, there is no way for the templates and configurable parameters to fit everyones' needs. The templates and configurable parameters have been written to hit a sweet spot between ease-of-use and excessiveness. So, to fit your needs--please fork the project and adjust accordingly. Degeneres should be incorporated into your development workflow; **generate the boilerplate**, don't write it.
-
 ### Features
 
 - Protobuf data/service configuration
@@ -21,12 +11,6 @@ Finally, there is no way for the templates and configurable parameters to fit ev
 - Middleware (security, logging, cors, no-cache)
 - Self signed key generation
 - Vendored libraries
-
-### Limitations
-
-- Golang server generation only
-- Less performant than gRPC (JSON vs Protobuf)
-- Not production ready
 
 ### Example
 
@@ -142,6 +126,22 @@ curl -d '{"first_name":"Chet"}' http://localhost:8080/person
 curl -d '{"first_name":"Chet"}' -H "Origin: http://www.example.com" http://localhost:8080/person
 curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 ```
+
+### Motivation
+
+gRPC is a brilliant system: describe data and services in Protobuf definitions that are used to generate servers in the language of your choosing. Need to make a change to the data or service? Update the Protobufs, regenerate the servers, rinse, repeat. This has been a fantastic workflow in production environments.
+
+The only downside at the moment is the gRPC ecosystem isn't readily available to many web toolsets & systems people use regularly like Postman, cURL, Angular/React, legacy/production JSON servers, etc. (although this will change in short order as the development of gRPC-web has been active for some time). So, Degeneres solves this by changing the data serialization from Protobuf to JSON and exposing REST-like endpoints.
+
+Also, for convenience and the reduction of hand-typed boilerplate, input data validation & transformation have been added along with configurable middleware at the service or endpoint levels.
+
+Finally, there is no way for the templates and configurable parameters to fit everyones' needs. The templates and configurable parameters have been written to hit a sweet spot between ease-of-use and excessiveness. So, to fit your needs--please fork the project and adjust accordingly. Degeneres should be incorporated into your development workflow; **generate the boilerplate**, don't write it.
+
+### Limitations
+
+- Golang server generation only
+- Less performant than gRPC (JSON vs Protobuf)
+- Not production ready
 
 ### TODO
 
