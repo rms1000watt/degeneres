@@ -157,6 +157,7 @@ Finally, there is no way for the templates and configurable parameters to fit ev
 - [x] Check true/false on middleware
 - [x] Vendoring in generated code
 - [x] More middleware: hsts, ssl redirect, xss protection, method logging
+- [ ] Add Catch-all, root handler with debug "path not found"
 - [ ] More docs
 - [ ] Test protobuf with gRPC
 - [ ] Generate unit tests
