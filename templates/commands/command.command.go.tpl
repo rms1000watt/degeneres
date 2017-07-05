@@ -36,6 +36,12 @@ func ServerHandler() http.Handler {
 
 	{{range $endpoint := .Endpoints}}mux.HandleFunc("{{$endpoint.Pattern}}", helpers.HandleMiddlewares({{$endpoint.TitleCamel}}Handler, {{$.MiddlewareNames}}))
 	{{end}}
+    mux.HandleFunc("/", helpers.HandleMiddlewares(RootHandler, helpers.MiddlewareLogger))
 
 	return mux
+}
+
+func RootHandler(w http.ResponseWriter, r *http.Request) {
+    log.Debug("Path not found: ", r.URL.Path)
+    http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
