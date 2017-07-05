@@ -34,6 +34,7 @@ var (
 		"MinusP":      MinusP,
 		"MinusStar":   MinusStar,
 	}
+	degeneresDir = filepath.Join(build.Default.GOPATH, "src", "github.com", "rms1000watt", "degeneres")
 )
 
 func Generate(cfg Config) {
@@ -122,13 +123,7 @@ func getHelperFileNames() (helperFileNames []string, err error) {
 }
 
 func getTemplates(dg Degeneres) (templates []Template) {
-	workingDir, err := os.Getwd()
-	if err != nil {
-		log.Debug("Failed getting working directory: ", err)
-		workingDir = "."
-	}
-
-	templatesDir := filepath.Join(workingDir, dirTemplates)
+	templatesDir := filepath.Join(degeneresDir, dirTemplates)
 	templateFiles, err := ioutil.ReadDir(templatesDir)
 	if err != nil {
 		log.Error("Failed reading templates directory: ", err)
