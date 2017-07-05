@@ -108,6 +108,7 @@ type DgMessage struct {
 
 type DgField struct {
 	Name
+	DataTypeName     Name
 	DataType         string
 	Transform        string
 	Validate         string
@@ -167,6 +168,7 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 		for _, protoField := range protoMessage.Fields {
 			fields = append(fields, DgField{
 				Name:             genName(protoField.Name),
+				DataTypeName:     genName(protoField.DataType),
 				DataType:         fixDataType(protoField.DataType, false, protoField.Rule),
 				Transform:        getTransformFromOptions(protoField.Options),
 				Validate:         getValidateFromOptions(protoField.Options),
@@ -319,6 +321,7 @@ func getInputs(proto Proto) (out []DgMessage) {
 		for _, field := range input.Fields {
 			fields = append(fields, DgField{
 				Name:             genName(field.Name),
+				DataTypeName:     genName(field.DataType),
 				DataType:         fixDataType(field.DataType, true, field.Rule),
 				Transform:        getTransformFromOptions(field.Options),
 				Validate:         getValidateFromOptions(field.Options),

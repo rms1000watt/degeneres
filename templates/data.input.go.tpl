@@ -53,14 +53,14 @@ func Convert{{$input.TitleCamel}}({{$input.Camel}} *{{$input.TitleCamel}}) ({{Mi
 
 	{{$field.Camel}} := {{MinusStar $field.DataType | MinusP}}{}
 	for _, field := range {{$input.Camel}}.{{$field.TitleCamel}} {
-		{{$field.Camel}} = append({{$field.Camel}}, Convert{{$field.TitleCamel}}P(field))
+		{{$field.Camel}} = append({{$field.Camel}}, Convert{{$field.DataTypeName.TitleCamel}}P(field))
 	}
 	{{MinusP $input.Camel}}.{{$field.TitleCamel}} = {{$field.Camel}}
 
 	{{else if $field.IsStruct}}
 
 	if {{$input.Camel}}.{{$field.TitleCamel}} != nil {
-		{{MinusP $input.Camel}}.{{$field.TitleCamel}} = Convert{{$field.TitleCamel}}P({{$input.Camel}}.{{$field.TitleCamel}})
+		{{MinusP $input.Camel}}.{{$field.TitleCamel}} = Convert{{$field.DataTypeName.TitleCamel}}P({{$input.Camel}}.{{$field.TitleCamel}})
 	}
 
 	{{else if $field.IsRepeated}}
