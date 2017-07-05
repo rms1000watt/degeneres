@@ -9,6 +9,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cast"
 )
 
 const (
@@ -258,6 +259,10 @@ func getMiddlewares(options []Option) (map[string]string, string) {
 	middlewareNameArr := []string{}
 	middlewares := map[string]string{}
 	for _, option := range options {
+		if !cast.ToBool(option.Value) {
+			continue
+		}
+
 		optionName := strings.ToLower(fixOptionName(option.Name))
 		middlewareName := Name{}
 		switch optionName {

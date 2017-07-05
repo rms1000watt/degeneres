@@ -145,7 +145,7 @@ curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [x] Use a logging package
 - [ ] Use default Options method
 - [x] CORS middleware
-- [ ] Check true/false on middleware
+- [x] Check true/false on middleware
 - [ ] Vendoring in generated code
 - [x] More middleware: hsts, ssl redirect, xss protection, method logging
 - [ ] More docs
