@@ -18,26 +18,21 @@ import (
 
 const (
 	dirTemplates = "templates"
+	dirCommands  = "commands"
 	dirHelpers   = "helpers"
 	extTpl       = ".tpl"
 )
 
 var (
-	cnt        = 0
-	errGenFail = errors.New("Failed generating project")
-	funcMap    = template.FuncMap{
-		"TimeNowYear":          time.Now().Year,
-		"HandleQuotes":         HandleQuotes,
-		"EmptyValue":           EmptyValue,
-		"GetHTTPMethod":        GetHTTPMethod,
-		"FallbackSet":          FallbackSet,
-		"GetMethodMiddlewares": GetMethodMiddlewares,
-		"GetPathMiddlewares":   GetPathMiddlewares,
-		"GetInputType":         GetInputType,
-		"GetDereferenceFunc":   GetDereferenceFunc,
-		"IsStruct":             IsStruct,
-		"MinusP":               MinusP,
-		"MinusStar":            MinusStar,
+	cnt                    = 0
+	errGenFail             = errors.New("Failed generating project")
+	errRecursiveImport     = errors.New("Recursive Import")
+	errFailedReadingFile   = errors.New("Failed reading file")
+	errFailedUnmarshalFile = errors.New("Failed unmarshal file")
+	funcMap                = template.FuncMap{
+		"TimeNowYear": time.Now().Year,
+		"MinusP":      MinusP,
+		"MinusStar":   MinusStar,
 	}
 )
 
@@ -95,13 +90,13 @@ func UnmarshalFile(filePath string) (proto Proto, err error) {
 		cnt++
 		if cnt > 100 {
 			log.Warn("Greater than 100 imports.. recursive import?")
-			break
+			return proto, errRecursiveImport
 		}
 		filePath := filepath.Join(build.Default.GOPATH, "src", importFilepath)
 		importedProto, err := UnmarshalFile(filePath)
 		if err != nil {
 			log.Error("Failed unmarshalling file: ", err)
-			break
+			return proto, errFailedUnmarshalFile
 		}
 
 		importedProtos = append(importedProtos, importedProto)
@@ -127,28 +122,28 @@ func getHelperFileNames() (helperFileNames []string, err error) {
 }
 
 func getTemplates(dg Degeneres) (templates []Template) {
-	singleTemplateNames := []string{
-		".gitignore.tpl",
-		"main.go.tpl",
-		"cmd.root.go.tpl",
-		"cmd.version.go.tpl",
-		"Readme.md.tpl",
-		"License..tpl",
-		"Dockerfile..tpl",
-		"helpers.middlewares.go.tpl",
-		"helpers.helpers.go.tpl",
-		"helpers.unmarshal.go.tpl",
-		"helpers.validate.go.tpl",
-		"helpers.transform.go.tpl",
-		"helpers.handler.go.tpl",
-		"data.data.go.tpl",
-		"data.input.go.tpl",
+	workingDir, err := os.Getwd()
+	if err != nil {
+		log.Debug("Failed getting working directory: ", err)
+		workingDir = "."
 	}
 
-	for _, singleTemplateName := range singleTemplateNames {
+	templatesDir := filepath.Join(workingDir, dirTemplates)
+	templateFiles, err := ioutil.ReadDir(templatesDir)
+	if err != nil {
+		log.Error("Failed reading templates directory: ", err)
+		return
+	}
+
+	for _, templateFile := range templateFiles {
+		fileName := templateFile.Name()
+		if templateFile.IsDir() || len(fileName) < len(extTpl)+2 || fileName[len(fileName)-len(extTpl):] != extTpl {
+			continue
+		}
+
 		templates = append(templates, Template{
-			TemplateName: singleTemplateName,
-			FileName:     singleTemplateName,
+			TemplateName: fileName,
+			FileName:     fileName,
 			Data:         dg,
 		})
 	}
@@ -158,29 +153,25 @@ func getTemplates(dg Degeneres) (templates []Template) {
 
 		templates = append(templates, Template{
 			TemplateName: "cmd." + lowerKey + ".go.tpl",
-			FileName:     "cmd.command.go.tpl",
+			FileName:     filepath.Join(dirCommands, "cmd.command.go.tpl"),
 			Data:         service,
 		})
 		templates = append(templates, Template{
 			TemplateName: lowerKey + "." + lowerKey + ".go.tpl",
-			FileName:     "command.command.go.tpl",
+			FileName:     filepath.Join(dirCommands, "command.command.go.tpl"),
 			Data:         service,
 		})
 		templates = append(templates, Template{
 			TemplateName: lowerKey + ".config.go.tpl",
-			FileName:     "command.config.go.tpl",
+			FileName:     filepath.Join(dirCommands, "command.config.go.tpl"),
 			Data:         service,
 		})
 
 		for _, endpoint := range service.Endpoints {
-			// ephemeralCfg := templateCfg
-			// ephemeralCfg.API.Paths = []TemplatePath{apiPath}
-
 			templates = append(templates, Template{
 				TemplateName: fmt.Sprintf("%s.%sHandler.go.tpl", lowerKey, endpoint.Camel),
-				FileName:     "command.handler.go.tpl",
+				FileName:     filepath.Join(dirCommands, "command.handler.go.tpl"),
 				Data:         endpoint,
-				// Data: service,
 			})
 		}
 	}

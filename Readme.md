@@ -6,7 +6,7 @@ Degeneres, the microservice generator. Use Protobuf definitions to generate comp
 
 gRPC is a brilliant system: describe data and services in Protobuf definitions that are used to generate servers in the language of your choosing. Need to make a change to the data or service? Update the Protobufs, regenerate the servers, rinse, repeat. This has been a fantastic workflow in production environments.
 
-The only downside at the moment is the gRPC ecosystem isn't readily available to many web toolsets & systems people use regularly like Postman, cURL, Angular/React, legacy/production JSON servers, etc. (although this will change in short order as the development of gRPC-web has been active for some time). So, Degeneres solves this by changing the data serialization from Protobuf to JSON and exposes REST-like endpoints.
+The only downside at the moment is the gRPC ecosystem isn't readily available to many web toolsets & systems people use regularly like Postman, cURL, Angular/React, legacy/production JSON servers, etc. (although this will change in short order as the development of gRPC-web has been active for some time). So, Degeneres solves this by changing the data serialization from Protobuf to JSON and exposing REST-like endpoints.
 
 Also, for convenience and the reduction of hand-typed boilerplate, input data validation & transformation have been added along with configurable middleware at the service or endpoint levels.
 
@@ -44,7 +44,7 @@ option (dg.docker_path) = "docker.io/rms1000watt/degeneres-test";
 option (dg.import_path) = "github.com/rms1000watt/degeneres-test";
 option (dg.origins) = "http://localhost,https://localhost,http://127.0.0.1,https://127.0.0.1";
 
-service BallparkAPI {
+service Ballpark {
     option (dg.short_description) = "Ballpark Service API for stadium information";
     option (dg.middleware.cors) = "true";
     option (dg.middleware.no_cache) = true;
@@ -92,6 +92,14 @@ message ManagementOut {
 }
 ```
 
+After you `go build` the generated code, you can run...
+
+```
+degeneres-test ballpark
+```
+
+...and have endpoints accesible at `/person`, `/ticket`, and `/mangement`.
+
 ### Usage
 
 In one terminal:
@@ -118,8 +126,8 @@ PROJECT_PATH=$(go env GOPATH)/src/github.com/rms1000watt/degeneres-test bash -c 
 cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres-test
 
 # Run the project with or without TLS
-cd ../degeneres-test; clear; go run main.go ballpark --log-level debug
-cd ../degeneres-test; clear; go run main.go ballpark --log-level debug --certs-path ./certs --cert-name server.cer --key-name server.key
+cd ../degeneres-test; govendor sync; clear; go run main.go ballpark --log-level debug
+cd ../degeneres-test; govendor sync; clear; go run main.go ballpark --log-level debug --certs-path ./certs --cert-name server.cer --key-name server.key
 ```
 
 In another terminal:
@@ -143,12 +151,14 @@ curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 - [x] Continue refactoring templates
 - [x] Check for `required` tag first then continue in order
 - [x] Use a logging package
-- [ ] Use default Options method
+- [x] Use default Options method
+- [x] Convert generator warnings to errors
 - [x] CORS middleware
 - [x] Check true/false on middleware
-- [ ] Vendoring in generated code
+- [x] Vendoring in generated code
 - [x] More middleware: hsts, ssl redirect, xss protection, method logging
 - [ ] More docs
 - [ ] Test protobuf with gRPC
 - [ ] Generate unit tests
 - [ ] Create test repo
+- [ ] Static file handling + gzip

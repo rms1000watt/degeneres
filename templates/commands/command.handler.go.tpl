@@ -15,6 +15,11 @@ func {{.TitleCamel}}Handler(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Starting {{.TitleCamel}}Handler")
 	defer log.Debug("Finished {{.TitleCamel}}Handler")
 
+	if r.Method == http.MethodOptions {
+		// Process headers and return
+		return
+	}
+
 	{{if .Methods}}
 	switch r.Method {
 		{{range $method := .Methods}}case http.Method{{$method.TitleCamel}}:
