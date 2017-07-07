@@ -71,26 +71,27 @@ func MiddlewareSecure(fn http.HandlerFunc) http.HandlerFunc {
 
 func MiddlewareCORS(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("CORS Request Origin: ", r.Header.Get("Origin"))
-
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-
 		if len(CORSOrigins) == 0 {
 			log.Debug("No CORS Origins defined, but CORS middleware called. No header write.")
 			fn(w, r)
 			return
 		}
 
-		if origin := r.Header.Get("Origin"); origin != "" && valInArr(origin, CORSOrigins) {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			fn(w, r)
+		origin := r.Header.Get("Origin")
+		log.Debug("CORS Request Origin: ", origin)
+
+		if origin == "" || !valInArr(origin, CORSOrigins) {
+			log.Debug("CORS Bad Host")
+			http.Error(w, "Bad Host", http.StatusInternalServerError)
 			return
 		}
 
-		log.Debug("CORS Bad Host")
-		http.Error(w, "Bad Host", http.StatusInternalServerError)
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token")
+		
+		fn(w, r)
 	}
 }
 
