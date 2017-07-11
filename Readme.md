@@ -43,7 +43,7 @@ message EchoIn {
 }
 
 message EchoOut {
-    string out = 2;
+    string out = 1;
 }
 EOF
 
@@ -98,6 +98,55 @@ curl -d `{"in":"Hello World"}` http://localhost:8080/echo
 You should get a JSON with a hashed value back!
 
 #### Repeated Usage
+
+Naturally, you want to update your protobuf file and regenerate.
+
+```bash
+# Go to your project
+cd $(go env GOPATH)/src/github.com/rms1000watt/test-server
+
+# Update your protobuf file
+cat << EOF > pb/test.proto
+syntax = "proto3";
+
+package pb;
+
+option (dg.version) = "v0.1.0";
+option (dg.author) = "Ryan Smith";
+option (dg.project_name) = "Test Server";
+option (dg.docker_path) = "docker.io/rms1000watt/test-server";
+option (dg.import_path) = "github.com/rms1000watt/test-server";
+
+service Echo {
+    option (dg.middleware.logger) = true;
+    option (dg.middleware.no_cache) = true;
+
+    rpc Echo(EchoIn) returns (EchoOut) {
+        option (dg.method) = "GET";
+        option (dg.method) = "POST";
+    }
+}
+
+message EchoIn {
+    string in   = 1 [(dg.validate) = "maxLength=100", (dg.transform) = "hash"];
+    int age     = 2;
+    string name = 3;
+}
+
+message EchoOut {
+    string out  = 1;
+    int age     = 2;
+    string name = 3;
+}
+EOF
+
+# Regenerate
+go generate
+
+# Rebuild and run
+go build
+./test-server echo --log-level debug
+```
 
 ### Features
 
@@ -172,6 +221,7 @@ Degeneres generates the boilerplate for you! From the `test.proto` file defined 
 - [ ] More examples
 - [ ] Generate unit tests
 - [ ] Workout kinks in workflow
+- [ ] Better stubbing of handlers
 
 ### Dev Commands...
 
