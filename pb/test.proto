@@ -2,75 +2,24 @@ syntax = "proto3";
 
 package pb;
 
-import "github.com/rms1000watt/degeneres/pb/address.proto";
-
 option (dg.version) = "v0.1.0";
 option (dg.author) = "Ryan Smith";
-option (dg.project_name) = "Degeneres Test";
-option (dg.docker_path) = "docker.io/rms1000watt/degeneres-test";
-option (dg.import_path) = "github.com/rms1000watt/degeneres-test";
+option (dg.project_name) = "Test Server";
+option (dg.docker_path) = "docker.io/rms1000watt/test-server";
+option (dg.import_path) = "github.com/rms1000watt/test-server";
 
-option (dg.origins) = "http://localhost,http://127.0.0.1,http://www.example.com,https://localhost,https://127.0.0.1,https://www.example.com";
-
-service Ballpark {
-    option (dg.short_description) = "Ballpark Service API for stadium information";
-    option (dg.middleware.no_cache) = true;
-    option (dg.middleware.cors) = true;
+service Echo {
     option (dg.middleware.logger) = true;
-    option (dg.middleware.secure) = true;
 
-    rpc Person(PersonIn) returns (PersonOut) {
-        option (dg.middleware.no_cache) = false;
-        option (dg.method) = "GET";
+    rpc Echo(EchoIn) returns (EchoOut) {
         option (dg.method) = "POST";
     }
-
-    rpc Ticket(TicketIn) returns (TicketOut) {
-        option (dg.method) = "GET";
-        option (dg.method) = "POST";
-        option (dg.method) = "PUT";
-    }
-
-    rpc Management(ManagementIn) returns (ManagementOut) {}
 }
 
-message PersonIn {
-    int64 id                       = 1;
-    string first_name              = 2 [(dg.validate) = "maxLength=100", (dg.transform) = "truncate=50"];
-    string last_name               = 3 [(dg.validate) = "maxLength=1000,required,minLength=1", (dg.transform) = "truncate=50,hash"];
-    address.Address address        = 4;
-    repeated Attendance attendance = 5;
+message EchoIn {
+    string in = 1 [(dg.validate) = "maxLength=100", (dg.transform) = "hash"];
 }
 
-message PersonOut {
-    string first_name       = 1;
-    string last_name        = 2;
-    address.Address address = 3;
-    Profile profile         = 4;
-}
-
-message TicketIn {
-    string id = 1;
-}
-
-message TicketOut {
-    string row  = 1;
-    string seat = 2;
-}
-
-message ManagementIn {
-    repeated bool power = 1;
-}
-
-message ManagementOut {
-    repeated bool success = 1;
-}
-
-message Profile {
-    string email    = 1 [(dg.transform) = "hash"];
-    string username = 2;
-}
-
-message Attendance {
-    string date = 1;
+message EchoOut {
+    string out = 2;
 }

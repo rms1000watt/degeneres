@@ -1,90 +1,178 @@
 ## Degeneres
 
-Degeneres, the microservice generator. Use Protobuf definitions to generate complete REST-like microservices in Golang.
+Degeneres, the boilerplate generator for REST-like servers in Go!
 
-### Features
+### Motivation
 
-- Protobuf data/service configuration
-- Input validation on `json` tags
-- Input transformation on `json` tags
-- CLI Commander (spf13/cobra)
-- Middleware (security, logging, cors, no-cache)
-- Self signed key generation
-- Vendored libraries
+Golang is a fantastic language! However, you often find yourself writing a ton of boilerplate when writing the same functionality across your multiple struct types. Degeneres was built to generate the boilerplate whenever your structs change or you require different functionality on your structs. 
 
-### Example
+### Usage
 
-Take an input protobuf file and generate your full API
+#### First Time Usage
 
-```proto
+In one terminal:
+
+```bash
+# Get and build the project
+go get -u -v github.com/rms1000watt/degeneres
+cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres
+go build
+
+# Create a protobuf file
+cat << EOF > pb/test.proto
 syntax = "proto3";
 
 package pb;
 
 option (dg.version) = "v0.1.0";
 option (dg.author) = "Ryan Smith";
-option (dg.project_name) = "Degeneres Test";
-option (dg.docker_path) = "docker.io/rms1000watt/degeneres-test";
-option (dg.import_path) = "github.com/rms1000watt/degeneres-test";
-option (dg.origins) = "http://localhost,https://localhost,http://127.0.0.1,https://127.0.0.1";
+option (dg.project_name) = "Test Server";
+option (dg.docker_path) = "docker.io/rms1000watt/test-server";
+option (dg.import_path) = "github.com/rms1000watt/test-server";
 
-service Ballpark {
-    option (dg.short_description) = "Ballpark Service API for stadium information";
-    option (dg.middleware.cors) = "true";
-    option (dg.middleware.no_cache) = true;
+service Echo {
+    option (dg.middleware.logger) = true;
 
-    rpc Person(PersonIn) returns (PersonOut) {
-        option (dg.method) = "GET";
+    rpc Echo(EchoIn) returns (EchoOut) {
         option (dg.method) = "POST";
     }
-
-    rpc Ticket(TicketIn) returns (TicketOut) {
-        option (dg.method) = "GET";
-        option (dg.method) = "POST";
-        option (dg.method) = "PUT";
-    }
-
-    rpc Management(ManagementIn) returns (ManagementOut) {}
 }
 
-message PersonIn {
-    int64 id          = 1;
-    string first_name = 2 [(dg.validate) = "maxLength=100", (dg.transform) = "truncate=50"];
-    string last_name  = 3 [(dg.validate) = "maxLength=1000,minLength=1,required", (dg.transform) = "truncate=50,hash"];
+message EchoIn {
+    string in = 1 [(dg.validate) = "maxLength=100", (dg.transform) = "hash"];
 }
 
-message PersonOut {
-    string first_name = 1;
-    string last_name  = 2;
+message EchoOut {
+    string out = 2;
 }
+EOF
 
-message TicketIn {
-    string id = 1;
-}
+# Generate the server code and go to it
+./degeneres generate -f pb/test.proto -o ../test-server
+cd ../test-server
 
-message TicketOut {
-    string row  = 1;
-    string seat = 2;
-}
+# Install govendor and get vendored libraries
+go get -u -v github.com/kardianos/govendor
+govendor sync
 
-message ManagementIn {
-    repeated bool power = 1;
-}
-
-message ManagementOut {
-    repeated bool success = 1;
-}
+# Build and start your server with debug level logging
+go build
+./test-server echo --log-level debug
 ```
 
-After you `go build` the generated code, you can run...
+Open a new terminal:
+
+```bash
+# Send a cURL to the server
+# You should get a 200 with an empty JSON response: {}
+curl -d `{"in":"Hello World"}` http://localhost:8080/echo
+```
+
+You get an empty JSON response because the logic to go from Input -> Output is up to you. Edit the handler to fill in the Output logic
+
+```bash
+open $(go env GOPATH)/src/github.com/rms1000watt/test-server/echo/echoHandler.go
+```
+
+And add 1 line to echo the response in `EchoHandlerPOST`:
+
+```go
+echoOut.Out = echoIn.In
+```
+
+Now rebuild and run the server again:
+
+```bash
+# Rebuild and run
+cd $(go env GOPATH)/src/github.com/rms1000watt/test-server
+go build
+./test-server echo --log-level debug
+```
+
+Send the cURL request again:
+
+```bash
+curl -d `{"in":"Hello World"}` http://localhost:8080/echo
+```
+
+You should get a JSON with a hashed value back!
+
+#### Repeated Usage
+
+### Features
+
+Degeneres generates the boilerplate for you! From the `test.proto` file defined above, you get a complete go server:
 
 ```
-degeneres-test ballpark
+.
+├── Dockerfile
+├── License
+├── Readme.md
+├── cmd
+│   ├── echo.go
+│   ├── root.go
+│   └── version.go
+├── data
+│   ├── data.go
+│   └── input.go
+├── echo
+│   ├── config.go
+│   ├── echo.go
+│   └── echoHandler.go
+├── helpers
+│   ├── handler.go
+│   ├── helpers.go
+│   ├── middlewares.go
+│   ├── transform.go
+│   ├── unmarshal.go
+│   └── validate.go
+├── main.go
+└── vendor
+    └── vendor.json
 ```
 
-...and have endpoints accesible at `/person`, `/ticket`, and `/mangement`.
+#### Validations
 
-### Usage
+#### Transformations
+
+#### Middleware
+
+- `dg.middleware.cors`
+
+#### Self-Signed Keys
+
+```bash
+./degeneres generate certs
+```
+
+### Limitations
+
+- Server generation for Golang only
+- Less performant than gRPC (JSON vs Protobuf)
+- Not production ready
+
+### TODO
+
+- [x] Fix lexer to include `repeated`
+- [x] Move `data` to different dir
+- [x] Identify if message is input & create inputP
+- [x] Continue refactoring templates
+- [x] Check for `required` tag first then continue in order
+- [x] Use a logging package
+- [x] Use default Options method
+- [x] Convert generator warnings to errors
+- [x] CORS middleware
+- [x] Check true/false on middleware
+- [x] Vendoring in generated code
+- [x] More middleware: hsts, ssl redirect, xss protection, method logging
+- [x] Add Catch-all, root handler with debug "path not found"
+- [ ] `go generate` to self regen generated code
+- [ ] More docs
+- [ ] Generate unit tests
+- [ ] Create test repo
+
+
+### Dev Commands...
 
 In one terminal:
 
@@ -100,8 +188,8 @@ govendor sync
 # Generate self signed certs
 go run main.go generate certs
 
-# Run the project with the default protobuf as `pb/test.proto`
-clear; rm -rf out; go run main.go generate
+# Run the project with the default protobuf as `pb/main.proto`
+clear; rm -rf out; go run main.go generate -f pb/main.proto
 
 # Copy the output to a test directory
 PROJECT_PATH=$(go env GOPATH)/src/github.com/rms1000watt/degeneres-test bash -c 'rm -rf $PROJECT_PATH && mkdir $PROJECT_PATH  && mkdir $PROJECT_PATH/certs && cp -r out/* $PROJECT_PATH && cp -r certs/* $PROJECT_PATH/certs && cp out/.gitignore $PROJECT_PATH/'
@@ -126,40 +214,3 @@ curl -d '{"first_name":"Chet"}' http://localhost:8080/person
 curl -d '{"first_name":"Chet"}' -H "Origin: http://www.example.com" http://localhost:8080/person
 curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
 ```
-
-### Motivation
-
-gRPC is a brilliant system: describe data and services in Protobuf definitions that are used to generate servers in the language of your choosing. Need to make a change to the data or service? Update the Protobufs, regenerate the servers, rinse, repeat. This has been a fantastic workflow in production environments.
-
-The only downside at the moment is the gRPC ecosystem isn't readily available to many web toolsets & systems people use regularly like Postman, cURL, Angular/React, legacy/production JSON servers, etc. (although this will change in short order as the development of gRPC-web has been active for some time). So, Degeneres solves this by changing the data serialization from Protobuf to JSON and exposing REST-like endpoints.
-
-Also, for convenience and the reduction of hand-typed boilerplate, input data validation & transformation have been added along with configurable middleware at the service or endpoint levels.
-
-Finally, there is no way for the templates and configurable parameters to fit everyones' needs. The templates and configurable parameters have been written to hit a sweet spot between ease-of-use and excessiveness. So, to fit your needs--please fork the project and adjust accordingly. Degeneres should be incorporated into your development workflow; **generate the boilerplate**, don't write it.
-
-### Limitations
-
-- Golang server generation only
-- Less performant than gRPC (JSON vs Protobuf)
-- Not production ready
-
-### TODO
-
-- [x] Fix lexer to include `repeated`
-- [x] Move `data` to different dir
-- [x] Identify if message is input & create inputP
-- [x] Continue refactoring templates
-- [x] Check for `required` tag first then continue in order
-- [x] Use a logging package
-- [x] Use default Options method
-- [x] Convert generator warnings to errors
-- [x] CORS middleware
-- [x] Check true/false on middleware
-- [x] Vendoring in generated code
-- [x] More middleware: hsts, ssl redirect, xss protection, method logging
-- [x] Add Catch-all, root handler with debug "path not found"
-- [ ] More docs
-- [ ] Test protobuf with gRPC
-- [ ] Generate unit tests
-- [ ] Create test repo
-- [ ] Static file handling + gzip
