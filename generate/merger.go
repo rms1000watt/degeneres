@@ -32,6 +32,7 @@ func Merge(proto *Proto, importedProtos ...Proto) (err error) {
 	importedProtosMap := map[string]Proto{}
 	for _, importedProto := range importedProtos {
 		importedProtosMap[importedProto.Package] = importedProto
+		proto.ProtoPaths = append(proto.ProtoPaths, importedProto.ProtoPaths...)
 	}
 
 	for _, importField := range importFields {

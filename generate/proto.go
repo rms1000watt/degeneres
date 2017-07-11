@@ -20,6 +20,9 @@ type Proto struct {
 	Options  []Option
 	Services []Service
 	Messages []Message
+
+	ProtoPaths    []string
+	ProtoFilePath string
 }
 
 type Option struct {

@@ -166,11 +166,12 @@ Degeneres generates the boilerplate for you! From the `test.proto` file defined 
 - [x] Vendoring in generated code
 - [x] More middleware: hsts, ssl redirect, xss protection, method logging
 - [x] Add Catch-all, root handler with debug "path not found"
-- [ ] `go generate` to self regen generated code
+- [x] `go generate` to self regen generated code
+- [x] Copy proto file into generated project
 - [ ] More docs
+- [ ] More examples
 - [ ] Generate unit tests
-- [ ] Create test repo
-
+- [ ] Workout kinks in workflow
 
 ### Dev Commands...
 

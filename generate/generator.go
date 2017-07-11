@@ -21,6 +21,8 @@ const (
 	dirCommands  = "commands"
 	dirHelpers   = "helpers"
 	extTpl       = ".tpl"
+
+	logNoOverwrite = "NO overwrite, file exists: "
 )
 
 var (
@@ -53,8 +55,6 @@ func Generate(cfg Config) {
 		return
 	}
 
-	dg.GeneratorVersion = getGeneratorVersion()
-
 	if err := os.Mkdir(cfg.OutPath, os.ModePerm); err != nil {
 		log.Errorf("Directory: \"%s\" already exists. Continuing...\n", cfg.OutPath)
 	}
@@ -71,6 +71,8 @@ func Generate(cfg Config) {
 			log.Error("Failed generating template: ", tpl.TemplateName, ": ", err)
 		}
 	}
+
+	copyProtos(cfg, dg.ProtoPaths)
 }
 
 func UnmarshalFile(filePath string) (proto Proto, err error) {
@@ -85,6 +87,8 @@ func UnmarshalFile(filePath string) (proto Proto, err error) {
 
 	tokens := Scan(fileBytes)
 	proto = Parse(tokens)
+	proto.ProtoPaths = append(proto.ProtoPaths, filePath)
+	proto.ProtoFilePath = filePath
 
 	importedProtos := []Proto{}
 	for _, importFilepath := range proto.Imports {
@@ -232,7 +236,7 @@ func genFile(cfg Config, tpl Template, helperFileNames []string) (err error) {
 	}
 
 	if _, err := os.Stat(completeFilePath); err == nil {
-		log.Info("NO overwrite, file exists: ", completeFilePath)
+		log.Info(logNoOverwrite, completeFilePath)
 		return nil
 	}
 
@@ -276,4 +280,33 @@ func getGeneratorVersion() string {
 		return "Not sure: Broken git"
 	}
 	return strings.TrimSpace(string(out))
+}
+
+func copyProtos(cfg Config, protoPaths []string) {
+	os.Mkdir(filepath.Join(cfg.OutPath, "pb"), os.ModePerm)
+
+	for _, protoPath := range protoPaths {
+		if strings.Contains(protoPath, build.Default.GOPATH) {
+			log.Debug("GOPATH included on import. No copy necessary: ", protoPath)
+			continue
+		}
+
+		newProtoPath := filepath.Join(cfg.OutPath, protoPath)
+		if _, err := os.Stat(newProtoPath); !os.IsNotExist(err) {
+			log.Info(logNoOverwrite, newProtoPath)
+			continue
+		}
+
+		protoBytes, err := ioutil.ReadFile(protoPath)
+		if err != nil {
+			log.Error("Failed reading protoPath: ", protoPath)
+			continue
+		}
+
+		if err := ioutil.WriteFile(newProtoPath, protoBytes, os.ModePerm); err != nil {
+			log.Error("Failed writing protofile: ", newProtoPath)
+			continue
+		}
+		log.Info("Writing: ", newProtoPath)
+	}
 }

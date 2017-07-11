@@ -74,6 +74,9 @@ type Degeneres struct {
 	Services             []DgService
 	Messages             []DgMessage
 	Inputs               []DgMessage
+
+	ProtoPaths    []string
+	ProtoFilePath string
 }
 
 type DgService struct {
@@ -136,7 +139,12 @@ type Name struct {
 }
 
 func NewDegeneres(proto Proto) (dg Degeneres, err error) {
-	dg = Degeneres{}
+	dg = Degeneres{
+		ProtoPaths:       proto.ProtoPaths,
+		ProtoFilePath:    proto.ProtoFilePath,
+		GeneratorVersion: getGeneratorVersion(),
+	}
+
 	for _, option := range proto.Options {
 		optionName := strings.ToLower(fixOptionName(option.Name))
 		switch optionName {
