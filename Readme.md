@@ -6,7 +6,7 @@ Degeneres, the boilerplate generator for REST-like servers in Go!
 
 Golang is a fantastic language! However, you often find yourself writing a ton of boilerplate when writing the same functionality across your multiple struct types. Degeneres was built to generate the boilerplate whenever your structs change or you require different functionality on your structs. 
 
-While gRPC (leveraging Protobuf) would handle a lot of this functionality, many developer tools and in-production systems aren't able to communicate to gRPC servers (cURL, Postman, Javascript fetch, paying business-customers, ...). So, Degeneres leverages Protobuf definitions to generate REST-like servers with JSON serialization that majority of systems can communicate with.
+While gRPC (leveraging Protobuf) would handle a lot of this functionality, many developer tools and in-production systems aren't able to communicate to gRPC servers (cURL, Postman, Javascript fetch, paying business-customers, etc.) So, Degeneres leverages Protobuf definitions to generate REST-like servers with JSON serialization that majority of systems can communicate with.
 
 ### Usage
 
