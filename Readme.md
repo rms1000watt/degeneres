@@ -243,9 +243,50 @@ Float and Int Validations:
 
 #### Transformations
 
+Transformations have the Protobuf field level option syntax:
+
+```proto
+string first_name = 1 [(dg.transform) = "truncate=50,hash"];
+```
+
+And can be combined with other options:
+
+```proto
+string first_name = 1 [(dg.validate) = "maxLength=100", (dg.transform) = "truncate=50,hash"];
+```
+
+General Trasformation:
+
+| Transformation | Usage | Example | Description |
+| --- | --- | --- | --- |
+| Default | `default=VALUE` | `default=Darf` | Sets input as VALUE if input is nil |
+
+String Transformations:
+
+| Transformation | Usage | Example | Description |
+| --- | --- | --- | --- |
+| Hash | `hash` | `hash` | Essentially `hexEncode(sha256(input))` |
+| Encrypt | `encrypt` | `encrypt` | `aesgcm.Seal` (**DONT USE DEFAULT VALUES OR SCHEME IN PRODUCTION!**) |
+| Decrypt | `decrypt` | `decrypt` | `aesgcm.Open` (**DONT USE DEFAULT VALUES OR SCHEME IN PRODUCTION!**) |
+| Trim Chars | `trimChars=VALUE` | `trimChars=xx` | Uses `strings.Trim(input, VALUE)` |
+| Trim Space | `trimSpace` | `trimSpace` | Uses `strings.TrimSpace(input)` |
+| Truncate | `truncate=VALUE` | `truncate=50` | Essentially `input[:VALUE]` |
+| Password Hash | `passwordHash` | `passwordHash` | argon2 password hashing (**PLEASE INSPECT CODE THOROUGHLY**) |
+
 #### Middleware
 
-- `dg.middleware.cors`
+Middleware can be added as `service` or `rpc` options.
+
+```proto
+option (dg.middleware.no_cache) = true;
+```
+
+| Middleware | Usage | Description |
+| --- | --- | --- |
+| Logger | `dg.middleware.logger` | Logs the time for each request | 
+| CORS | `dg.middleware.cors` | Adds CORS headers if `option (dg.origins)` is added | 
+| Secure | `dg.middleware.secure` | Does TLS Redirect & adds HSTS, XSS Protection, Nosniff, Frame deny headers | 
+| No Cache | `dg.middleware.no_cache` | Adds no cache headers | 
 
 #### Self-Signed Keys
 
