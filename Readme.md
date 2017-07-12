@@ -226,7 +226,7 @@ string first_name = 1 [(dg.validate) = "minLength=2,maxLength=100"];
 String Validations:
 
 | Validation | Usage | Example | Description |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | Max Length | `maxLength=VALUE` | `maxLength=100` | Fails if len(input) > maxLength |
 | Min Length | `minLength=VALUE` | `minLength=2` | Fails if len(input) > maxLength |
 | Must Have Chars | `mustHaveChars=VALUE` | `mustHaveChars=aeiou` | Fails if chars in VALUE are not in input |
@@ -236,7 +236,7 @@ String Validations:
 Float and Int Validations:
 
 | Validation | Usage | Example | Description |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | Greater Than | `greaterThan=VALUE` | `greaterThan=100` | Fails if input < VALUE |
 | Less Than | `lessThan=VALUE` | `lessThan=100` | Fails if input > VALUE |
 
