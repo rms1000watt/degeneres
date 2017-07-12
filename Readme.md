@@ -217,6 +217,30 @@ Degeneres generates boilerplate so you don't have to. It handles some field leve
 
 #### Validations
 
+Validations have the Protobuf field level option syntax:
+
+```proto
+string first_name = 1 [(dg.validate) = "minLength=2,maxLength=100"];
+```
+
+String Validations:
+
+| Validation | Usage | Example | Description |
+| --- | --- | --- |
+| Max Length | `maxLength=VALUE` | `maxLength=100` | Fails if len(input) > maxLength |
+| Min Length | `minLength=VALUE` | `minLength=2` | Fails if len(input) > maxLength |
+| Must Have Chars | `mustHaveChars=VALUE` | `mustHaveChars=aeiou` | Fails if chars in VALUE are not in input |
+| Can't Have Chars | `cantHaveChars=VALUE` | `cantHaveChars=aeiou` | Fails if chars in VALUE are in input |
+| Only Have Chars | `onlyHaveChars=VALUE` | `onlyHaveChars=aeiou` | Fails if input has chars not in VALUE |
+
+Float and Int Validations:
+
+| Validation | Usage | Example | Description |
+| --- | --- | --- |
+| Greater Than | `greaterThan=VALUE` | `greaterThan=100` | Fails if input < VALUE |
+| Less Than | `lessThan=VALUE` | `lessThan=100` | Fails if input > VALUE |
+
+
 #### Transformations
 
 #### Middleware
@@ -233,7 +257,6 @@ Degeneres generates boilerplate so you don't have to. It handles some field leve
 
 - Server generation for Golang only
 - Less performant than gRPC (JSON vs Protobuf)
-- Not production ready
 
 ### TODO
 
@@ -258,47 +281,3 @@ Degeneres generates boilerplate so you don't have to. It handles some field leve
 - [ ] More examples
 - [ ] Generate unit tests
 - [ ] Workout kinks in workflow
-- [ ] Better stubbing of handlers
-
-### Dev Commands...
-
-In one terminal:
-
-```bash
-# Get the project
-go get github.com/rms1000watt/degeneres
-cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres
-
-# Get vendored projects
-go get -u -v github.com/kardianos/govendor
-govendor sync
-
-# Generate self signed certs
-go run main.go generate certs
-
-# Run the project with the default protobuf as `pb/main.proto`
-rm -rf out; go run main.go generate -f pb/main.proto
-
-# Copy the output to a test directory
-PROJECT_PATH=$(go env GOPATH)/src/github.com/rms1000watt/degeneres-test bash -c 'rm -rf $PROJECT_PATH && mkdir $PROJECT_PATH  && mkdir $PROJECT_PATH/certs && cp -r out/* $PROJECT_PATH && cp -r certs/* $PROJECT_PATH/certs && cp out/.gitignore $PROJECT_PATH/'
-
-# Go to the test directory
-cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres-test
-
-# Run the project with or without TLS
-cd ../degeneres-test; govendor sync; clear; go run main.go ballpark --log-level debug
-cd ../degeneres-test; govendor sync; clear; go run main.go ballpark --log-level debug --certs-path ./certs --cert-name server.cer --key-name server.key
-```
-
-In another terminal:
-
-```bash
-# Run a Successful command
-curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' -H "Origin: http://www.example.com" -D - http://localhost:8080/person
-curl -d '{"first_name":"Chet","middle_name":"Darf","last_name":"Star"}' -H "Origin: https://www.example.com" -D - --insecure https://localhost:8080/person
-
-# Run a Failing command
-curl -d '{"first_name":"Chet"}' http://localhost:8080/person
-curl -d '{"first_name":"Chet"}' -H "Origin: http://www.example.com" http://localhost:8080/person
-curl -d '{"first_name":"Chet"}' --insecure https://localhost:8080/person
-```
