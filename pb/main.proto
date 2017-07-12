@@ -20,18 +20,21 @@ service Ballpark {
     option (dg.middleware.secure) = true;
 
     rpc Person(PersonIn) returns (PersonOut) {
-        option (dg.middleware.no_cache) = false;
+        option (dg.middleware.no_cache) = true;
         option (dg.method) = "GET";
         option (dg.method) = "POST";
     }
 
     rpc Ticket(TicketIn) returns (TicketOut) {
+        option (dg.middleware.no_cache) = true;
         option (dg.method) = "GET";
         option (dg.method) = "POST";
         option (dg.method) = "PUT";
     }
 
-    rpc Management(ManagementIn) returns (ManagementOut) {}
+    rpc Management(ManagementIn) returns (ManagementOut) {
+        option (dg.middleware.no_cache) = true;
+    }
 }
 
 message PersonIn {

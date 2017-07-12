@@ -156,8 +156,13 @@ func getTemplates(dg Degeneres) (templates []Template) {
 			Data:         service,
 		})
 		templates = append(templates, Template{
-			TemplateName: lowerKey + "." + lowerKey + ".go.tpl",
-			FileName:     filepath.Join(dirCommands, "command.command.go.tpl"),
+			TemplateName: "server." + lowerKey + ".go.tpl",
+			FileName:     filepath.Join(dirCommands, "server.command.go.tpl"),
+			Data:         service,
+		})
+		templates = append(templates, Template{
+			TemplateName: lowerKey + ".preServe.go.tpl",
+			FileName:     filepath.Join(dirCommands, "command.preserve.go.tpl"),
 			Data:         service,
 		})
 		templates = append(templates, Template{

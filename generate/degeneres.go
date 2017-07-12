@@ -7,8 +7,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/davecgh/go-spew/spew"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cast"
 )
 
@@ -174,9 +172,11 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 	for _, protoMessage := range proto.Messages {
 		fields := []DgField{}
 		for _, protoField := range protoMessage.Fields {
+			dt := cleanDataType(protoField.DataType)
+
 			fields = append(fields, DgField{
 				Name:             genName(protoField.Name),
-				DataTypeName:     genName(protoField.DataType),
+				DataTypeName:     genName(dt),
 				DataType:         fixDataType(protoField.DataType, false, protoField.Rule),
 				Transform:        getTransformFromOptions(protoField.Options),
 				Validate:         getValidateFromOptions(protoField.Options),
@@ -204,8 +204,6 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 
 	services := []DgService{}
 	for _, service := range proto.Services {
-		log.Debug(spew.Sdump(genName(service.Name)))
-
 		longDescription := ""
 		shortDescription := ""
 		for _, option := range service.Options {
@@ -327,9 +325,11 @@ func getInputs(proto Proto) (out []DgMessage) {
 	for _, input := range inputs {
 		fields := []DgField{}
 		for _, field := range input.Fields {
+			dt := cleanDataType(field.DataType)
+
 			fields = append(fields, DgField{
 				Name:             genName(field.Name),
-				DataTypeName:     genName(field.DataType),
+				DataTypeName:     genName(dt),
 				DataType:         fixDataType(field.DataType, true, field.Rule),
 				Transform:        getTransformFromOptions(field.Options),
 				Validate:         getValidateFromOptions(field.Options),
@@ -584,4 +584,9 @@ func ToSnakeCase(src string) (out string) {
 
 func ToDashCase(in string) (out string) {
 	return strings.Replace(ToSnakeCase(in), "_", "-", -1)
+}
+
+func cleanDataType(in string) (out string) {
+	inArr := strings.Split(in, ".")
+	return inArr[len(inArr)-1]
 }

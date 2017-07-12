@@ -6,20 +6,23 @@ Degeneres, the boilerplate generator for REST-like servers in Go!
 
 Golang is a fantastic language! However, you often find yourself writing a ton of boilerplate when writing the same functionality across your multiple struct types. Degeneres was built to generate the boilerplate whenever your structs change or you require different functionality on your structs. 
 
+While gRPC (leveraging Protobuf) would handle a lot of this functionality, many developer tools and in-production systems aren't able to communicate to gRPC servers (cURL, Postman, Javascript fetch, paying business-customers, ...). So, Degeneres leverages Protobuf definitions to generate REST-like servers with JSON serialization that majority of systems can communicate with.
+
 ### Usage
 
 #### First Time Usage
 
-In one terminal:
+In one terminal, get and build the project:
 
 ```bash
-# Get and build the project
 go get -u -v github.com/rms1000watt/degeneres
 cd $(go env GOPATH)/src/github.com/rms1000watt/degeneres
 go build
+```
 
-# Create a protobuf file
-cat << EOF > pb/test.proto
+Create a protobuf file at `pb/test.proto`:
+
+```protobuf
 syntax = "proto3";
 
 package pb;
@@ -31,8 +34,6 @@ option (dg.docker_path) = "docker.io/rms1000watt/test-server";
 option (dg.import_path) = "github.com/rms1000watt/test-server";
 
 service Echo {
-    option (dg.middleware.logger) = true;
-
     rpc Echo(EchoIn) returns (EchoOut) {
         option (dg.method) = "POST";
     }
@@ -45,27 +46,69 @@ message EchoIn {
 message EchoOut {
     string out = 1;
 }
-EOF
+```
 
-# Generate the server code and go to it
+Generate the server code and cd to it:
+
+```bash
 ./degeneres generate -f pb/test.proto -o ../test-server
 cd ../test-server
+```
 
-# Install govendor and get vendored libraries
+You should now have complete server code:
+
+```
+.
+├── Dockerfile
+├── License
+├── Readme.md
+├── cmd
+│   ├── echo.go
+│   ├── root.go
+│   └── version.go
+├── data
+│   ├── data.go
+│   └── input.go
+├── doc.go
+├── echo
+│   ├── config.go
+│   ├── echoHandler.go
+│   └── preServe.go
+├── helpers
+│   ├── handler.go
+│   ├── helpers.go
+│   ├── middlewares.go
+│   ├── transform.go
+│   ├── unmarshal.go
+│   └── validate.go
+├── main.go
+├── pb
+│   └── test.proto
+├── server
+│   ├── config.go
+│   └── echo.go
+└── vendor
+    └── vendor.json
+```
+
+Install govendor and get vendored libraries:
+
+```bash
 go get -u -v github.com/kardianos/govendor
 govendor sync
+```
 
-# Build and start your server with debug level logging
+Build and start your server with debug level logging:
+
+```bash
 go build
 ./test-server echo --log-level debug
 ```
 
-Open a new terminal:
+Open a new terminal. Send a cURL to the server. (You should get a 200 with an empty JSON response: `{}`)
 
 ```bash
-# Send a cURL to the server
-# You should get a 200 with an empty JSON response: {}
-curl -d `{"in":"Hello World"}` http://localhost:8080/echo
+curl -d '{"in":"Hello World"}' http://localhost:8080/echo
 ```
 
 You get an empty JSON response because the logic to go from Input -> Output is up to you. Edit the handler to fill in the Output logic
@@ -83,7 +126,6 @@ echoOut.Out = echoIn.In
 Now rebuild and run the server again:
 
 ```bash
-# Rebuild and run
 cd $(go env GOPATH)/src/github.com/rms1000watt/test-server
 go build
 ./test-server echo --log-level debug
@@ -92,21 +134,24 @@ go build
 Send the cURL request again:
 
 ```bash
-curl -d `{"in":"Hello World"}` http://localhost:8080/echo
+curl -d '{"in":"Hello World"}' http://localhost:8080/echo
 ```
 
 You should get a JSON with a hashed value back!
 
 #### Repeated Usage
 
-Naturally, you want to update your protobuf file and regenerate.
+Naturally, you'll want to update your protobuf file and regenerate.
+
+Go to your project:
 
 ```bash
-# Go to your project
 cd $(go env GOPATH)/src/github.com/rms1000watt/test-server
+```
 
-# Update your protobuf file
-cat << EOF > pb/test.proto
+Update your protobuf file `pb/test.proto`:
+
+```protobuf
 syntax = "proto3";
 
 package pb;
@@ -119,66 +164,56 @@ option (dg.import_path) = "github.com/rms1000watt/test-server";
 
 service Echo {
     option (dg.middleware.logger) = true;
-    option (dg.middleware.no_cache) = true;
 
     rpc Echo(EchoIn) returns (EchoOut) {
-        option (dg.method) = "GET";
+        option (dg.middleware.no_cache) = true;
         option (dg.method) = "POST";
     }
 }
 
 message EchoIn {
     string in   = 1 [(dg.validate) = "maxLength=100", (dg.transform) = "hash"];
-    int age     = 2;
+    int64 age   = 2;
     string name = 3;
 }
 
 message EchoOut {
     string out  = 1;
-    int age     = 2;
+    int64 age   = 2;
     string name = 3;
 }
-EOF
+```
 
-# Regenerate
+Regenerate the code:
+
+```bash
 go generate
+```
 
-# Rebuild and run
+Update the handler to go from Input -> Ouput
+
+```bash
+open $(go env GOPATH)/src/github.com/rms1000watt/test-server/echo/echoHandler.go
+```
+
+Rebuild and run
+
+```bash
 go build
 ./test-server echo --log-level debug
 ```
 
+Send a cURL 
+
+```bash
+curl -d '{"in":"Hello World","age":88,"name":"Darf"}' http://localhost:8080/echo
+```
+
+Should be all good to go!
+
 ### Features
 
-Degeneres generates the boilerplate for you! From the `test.proto` file defined above, you get a complete go server:
-
-```
-.
-├── Dockerfile
-├── License
-├── Readme.md
-├── cmd
-│   ├── echo.go
-│   ├── root.go
-│   └── version.go
-├── data
-│   ├── data.go
-│   └── input.go
-├── echo
-│   ├── config.go
-│   ├── echo.go
-│   └── echoHandler.go
-├── helpers
-│   ├── handler.go
-│   ├── helpers.go
-│   ├── middlewares.go
-│   ├── transform.go
-│   ├── unmarshal.go
-│   └── validate.go
-├── main.go
-└── vendor
-    └── vendor.json
-```
+Degeneres generates boilerplate so you don't have to. It handles some field level validations & transformations and has some useful HTTP middleware. You can also generate self-signed certs.
 
 #### Validations
 
@@ -217,6 +252,8 @@ Degeneres generates the boilerplate for you! From the `test.proto` file defined 
 - [x] Add Catch-all, root handler with debug "path not found"
 - [x] `go generate` to self regen generated code
 - [x] Copy proto file into generated project
+- [x] Pull handlers into separate package for easier regen
+- [ ] Generator validation on types to handle duplication infile and across imports
 - [ ] More docs
 - [ ] More examples
 - [ ] Generate unit tests
@@ -240,7 +277,7 @@ govendor sync
 go run main.go generate certs
 
 # Run the project with the default protobuf as `pb/main.proto`
-clear; rm -rf out; go run main.go generate -f pb/main.proto
+rm -rf out; go run main.go generate -f pb/main.proto
 
 # Copy the output to a test directory
 PROJECT_PATH=$(go env GOPATH)/src/github.com/rms1000watt/degeneres-test bash -c 'rm -rf $PROJECT_PATH && mkdir $PROJECT_PATH  && mkdir $PROJECT_PATH/certs && cp -r out/* $PROJECT_PATH && cp -r certs/* $PROJECT_PATH/certs && cp out/.gitignore $PROJECT_PATH/'
