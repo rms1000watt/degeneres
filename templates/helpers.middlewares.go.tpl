@@ -31,7 +31,7 @@ func MiddlewareNoCache(fn http.HandlerFunc) http.HandlerFunc {
 
 func MiddlewareLogger(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-        start := time.Now()
+		start := time.Now()
 		fn(w, r)
 		log.Debugf("%s %s %s", r.Method, r.URL.Path, time.Since(start))
 	}
