@@ -2,9 +2,9 @@
 
 Degeneres, the boilerplate generator for REST-like servers in Go!
 
-### Example Generated Server
+### Example
 
-An example generated server can be seen at [http://github.com/rms1000watt/degeneres-test](http://github.com/rms1000watt/degeneres-test).
+An example server generated with Degeneres can be seen at [http://github.com/rms1000watt/degeneres-test](http://github.com/rms1000watt/degeneres-test)
 
 ### Motivation
 
