@@ -323,4 +323,6 @@ option (dg.middleware.no_cache) = true;
 - [ ] Generate unit tests
 - [ ] Example repo in github
 - [ ] Expvar
+- [ ] DB connection example (inversion of control)
+- [ ] Docker compose
 - [ ] Workout kinks in workflow
