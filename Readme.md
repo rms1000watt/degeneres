@@ -2,6 +2,10 @@
 
 Degeneres, the boilerplate generator for REST-like servers in Go!
 
+### Example Generated Server
+
+An example generated server can be seen at [http://github.com/rms1000watt/degeneres-test](http://github.com/rms1000watt/degeneres-test).
+
 ### Motivation
 
 Golang is a fantastic language! However, you often find yourself writing a ton of boilerplate when writing the same functionality across your multiple struct types. Degeneres was built to generate the boilerplate whenever your structs change or you require different functionality on your structs. 
