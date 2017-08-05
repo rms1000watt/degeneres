@@ -6,9 +6,11 @@ import "github.com/rms1000watt/degeneres/pb/address.proto";
 
 option (dg.version) = "v0.1.0";
 option (dg.author) = "Ryan Smith";
+option (dg.metrics) = true;
 option (dg.project_name) = "Degeneres Test";
 option (dg.docker_path) = "docker.io/rms1000watt/degeneres-test";
 option (dg.import_path) = "github.com/rms1000watt/degeneres-test";
+
 
 option (dg.origins) = "http://localhost,http://127.0.0.1,http://www.example.com,https://localhost,https://127.0.0.1,https://www.example.com";
 

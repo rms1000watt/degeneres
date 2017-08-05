@@ -319,10 +319,11 @@ option (dg.middleware.no_cache) = true;
 - [x] Pull handlers into separate package for easier regen
 - [ ] Generator validation on types to handle duplication infile and across imports
 - [ ] More docs
+- [ ] Docs to show all options
 - [ ] More examples
 - [ ] Generate unit tests
 - [ ] Example repo in github
-- [ ] Expvar
+- [x] Expvar
 - [ ] DB connection example (inversion of control)
 - [ ] Docker compose
 - [ ] Workout kinks in workflow

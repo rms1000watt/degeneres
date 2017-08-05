@@ -1,12 +1,17 @@
 package server
 
 import (
+	{{- if .Metrics}}
+	_ "expvar"
+	{{- end}}
     "fmt"
 	"net/http"
 	"path/filepath"
+	"time"
     
     "{{.ImportPath}}/{{.Camel}}"
     "{{.ImportPath}}/helpers"
+
     log "github.com/sirupsen/logrus"
 )
 
@@ -40,8 +45,13 @@ func {{.TitleCamel}}(cfg Config, {{.Camel}}Cfg {{.Camel}}.Config) {
 func {{.TitleCamel}}ServerHandler() http.Handler {
 	mux := http.NewServeMux()
 
-	{{range $endpoint := .Endpoints}}mux.HandleFunc("{{$endpoint.Pattern}}", helpers.HandleMiddlewares({{$endpoint.Camel}}Handler, {{$.MiddlewareNames}}))
-	{{end}}mux.HandleFunc("/", helpers.HandleMiddlewares(RootHandler, helpers.MiddlewareLogger))
+	{{- if .Metrics}}
+	mux.Handle("/debug/vars", http.DefaultServeMux)
+	{{- end}}
+	{{- range $endpoint := .Endpoints}}
+	mux.HandleFunc("{{$endpoint.Pattern}}", helpers.HandleMiddlewares({{$endpoint.Camel}}Handler, {{$.MiddlewareNames}}))
+	{{- end}}
+	mux.HandleFunc("/", helpers.HandleMiddlewares(RootHandler, helpers.MiddlewareLogger))
 
 	return mux
 }

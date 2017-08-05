@@ -14,6 +14,7 @@ const (
 	OptionVersion              = "version"
 	OptionImportPath           = "import_path"
 	OptionAuthor               = "author"
+	OptionMetrics              = "metrics"
 	OptionProjectName          = "project_name"
 	OptionShortDescription     = "short_description"
 	OptionLongDescription      = "long_description"
@@ -72,6 +73,7 @@ type Degeneres struct {
 	Services             []DgService
 	Messages             []DgMessage
 	Inputs               []DgMessage
+	Metrics              bool
 
 	ProtoPaths    []string
 	ProtoFilePath string
@@ -84,6 +86,7 @@ type DgService struct {
 	Middlewares      map[string]string
 	MiddlewareNames  string
 	Endpoints        []DgEndpoint
+	Metrics          bool
 
 	ImportPath string
 }
@@ -165,6 +168,8 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			dg.DockerPath = option.Value
 		case OptionOrigins:
 			dg.Origins = getOrigins(option.Value)
+		case OptionMetrics:
+			dg.Metrics = cast.ToBool(option.Value)
 		}
 	}
 
@@ -244,6 +249,7 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			Middlewares:      middlewares,
 			MiddlewareNames:  middlewareNames,
 			Endpoints:        endpoints,
+			Metrics:          dg.Metrics,
 
 			ImportPath: dg.ImportPath,
 		})
