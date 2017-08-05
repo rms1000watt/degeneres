@@ -321,4 +321,6 @@ option (dg.middleware.no_cache) = true;
 - [ ] More docs
 - [ ] More examples
 - [ ] Generate unit tests
+- [ ] Example repo in github
+- [ ] Expvar
 - [ ] Workout kinks in workflow
