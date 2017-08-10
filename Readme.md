@@ -325,8 +325,10 @@ option (dg.middleware.no_cache) = true;
 - [ ] More docs
 - [ ] Docs to show all options
 - [ ] More examples
-- [ ] Generate unit tests
-- [ ] Example repo in github
+- [ ] Generate unit tests for helpers
+- [ ] Generate server tests
+- [ ] Add validator to only accept fields in message
+- [x] Example repo in github
 - [x] Expvar
 - [ ] DB connection example (inversion of control)
 - [ ] Docker compose
