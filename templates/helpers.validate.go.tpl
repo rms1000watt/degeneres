@@ -32,10 +32,15 @@ func Validate(in interface{}) (msg string, err error) {
 			continue
 		}
 
+		fieldPointer := v.Field(i).Pointer()
 		if strings.Contains(strings.ToLower(tag), ValidateStrRequired) {
-			if v.Field(i).Pointer() == 0 {
+			if fieldPointer == 0 {
 				return ValidateStrRequiredErr, nil
 			}
+		}
+
+		if fieldPointer == 0 {
+			return
 		}
 
 		params := strings.Split(tag, ",")
