@@ -62,6 +62,21 @@ var (
 	TypeOfFloat32P = reflect.TypeOf(dummyFloat32P)
 	TypeOfFloat64P = reflect.TypeOf(dummyFloat64P)
 	TypeOfBoolP    = reflect.TypeOf(dummyBoolP)
+
+	builtinTypes = []reflect.Type{
+		TypeOfString,
+		TypeOfInt,
+		TypeOfInt64,
+		TypeOfFloat32,
+		TypeOfFloat64,
+		TypeOfBool,
+		TypeOfStringP,
+		TypeOfIntP,
+		TypeOfInt64P,
+		TypeOfFloat32P,
+		TypeOfFloat64P,
+		TypeOfBoolP,
+	}
 )
 
 func getRandomSalt() (salt []byte, err error) {
@@ -147,4 +162,13 @@ func dereferenceBoolArray(in []*bool) (out []bool) {
 		out = append(out, *inP)
 	}
 	return
+}
+
+func isBuiltin(fieldType reflect.Type) bool {
+	for _, builtinType := range builtinTypes {
+		if fieldType == builtinType {
+			return true
+		}
+	}
+	return false
 }

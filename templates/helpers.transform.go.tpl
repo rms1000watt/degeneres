@@ -19,6 +19,13 @@ func Transform(in interface{}) (err error) {
 	v := reflect.ValueOf(in).Elem()
 
 	for i := 0; i < t.NumField(); i++ {
+		if !isBuiltin(t.Field(i).Type) {
+			if err := Transform(v.Field(i).Interface()); err != nil {
+				log.Debug("Failed field transform:", err)
+				return err
+			}
+		}
+
 		tag := t.Field(i).Tag.Get(TagNameTransform)
 
 		if tag == "" || tag == "-" || tag == "_" || tag == " " {
