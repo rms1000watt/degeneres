@@ -66,7 +66,7 @@ func SetDefaultValue(value reflect.Value, defaultStr string) (err error) {
 	switch value.Type() {
 	case TypeOfStringP:
 		value.Elem().SetString(defaultStr)
-	case TypeOfIntP:
+	case TypeOfIntP, TypeOfInt64P:
 		value.Elem().SetInt(cast.ToInt64(defaultStr))
 	case TypeOfFloat32P:
 		err = errors.New("Unable to set default: Float32")
