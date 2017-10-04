@@ -56,7 +56,7 @@ func Generate(cfg Config) {
 	}
 
 	if err := os.Mkdir(cfg.OutPath, os.ModePerm); err != nil {
-		log.Errorf("Directory: \"%s\" already exists. Continuing...\n", cfg.OutPath)
+		log.Infof("Directory: \"%s\" already exists. Continuing...\n", cfg.OutPath)
 	}
 
 	helperFileNames, err := getHelperFileNames()
