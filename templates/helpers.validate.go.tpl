@@ -13,6 +13,19 @@ func Validate(in interface{}) (msg string, err error) {
 	v := reflect.ValueOf(in).Elem()
 
 	for i := 0; i < t.NumField(); i++ {
+		if !isBuiltin(t.Field(i).Type) {
+			msg, err := Validate(v.Field(i).Interface())
+			if err != nil {
+				log.Debug("Error field validate:", err)
+				return msg, err
+			}
+
+			if msg != "" {
+				log.Debug("Failed field validate:", msg)
+				return msg, err
+			}
+		}
+
 		tag := t.Field(i).Tag.Get(TagNameValidate)
 
 		if tag == "" || tag == "-" || tag == "_" || tag == " " {
