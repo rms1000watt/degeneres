@@ -8,7 +8,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// TODO: Change with https://play.golang.org/p/u4UQbo0ZeM
 func Validate(in interface{}) (msg string, err error) {
+	if IsZeroOfUnderlyingType(in) {
+		return
+	}
+
 	t := reflect.TypeOf(in).Elem()
 	v := reflect.ValueOf(in).Elem()
 
@@ -40,7 +45,7 @@ func Validate(in interface{}) (msg string, err error) {
 		}
 
 		if fieldPointer == 0 {
-			return
+			continue
 		}
 
 		params := strings.Split(tag, ",")

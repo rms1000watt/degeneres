@@ -15,6 +15,10 @@ import (
 )
 
 func Transform(in interface{}) (err error) {
+	if IsZeroOfUnderlyingType(in) {
+		return
+	}
+
 	t := reflect.TypeOf(in).Elem()
 	v := reflect.ValueOf(in).Elem()
 
@@ -45,7 +49,7 @@ func Transform(in interface{}) (err error) {
 			}
 
 			if v.Field(i).Pointer() == 0 {
-				return err
+				continue
 			}
 
 			switch v.Field(i).Elem().Type() {

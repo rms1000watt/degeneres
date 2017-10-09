@@ -172,3 +172,8 @@ func isBuiltin(fieldType reflect.Type) bool {
 	}
 	return false
 }
+
+// Courtesy of https://stackoverflow.com/questions/13901819/quick-way-to-detect-empty-values-via-reflection-in-go
+func IsZeroOfUnderlyingType(x interface{}) bool {
+	return reflect.DeepEqual(x, reflect.Zero(reflect.TypeOf(x)).Interface())
+}
