@@ -15,15 +15,15 @@ import (
 )
 
 func Transform(in interface{}) (err error) {
-	if IsZeroOfUnderlyingType(in) {
-		return
-	}
-
 	t := reflect.TypeOf(in).Elem()
 	v := reflect.ValueOf(in).Elem()
 
 	for i := 0; i < t.NumField(); i++ {
 		if !isBuiltin(t.Field(i).Type) {
+			if IsZeroOfUnderlyingType(v.Field(i).Interface()) {
+				continue
+			}
+
 			if err := Transform(v.Field(i).Interface()); err != nil {
 				log.Debug("Failed field transform:", err)
 				return err

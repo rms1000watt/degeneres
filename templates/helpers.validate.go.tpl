@@ -10,15 +10,15 @@ import (
 
 // TODO: Change with https://play.golang.org/p/u4UQbo0ZeM
 func Validate(in interface{}) (msg string, err error) {
-	if IsZeroOfUnderlyingType(in) {
-		return
-	}
-
 	t := reflect.TypeOf(in).Elem()
 	v := reflect.ValueOf(in).Elem()
 
 	for i := 0; i < t.NumField(); i++ {
 		if !isBuiltin(t.Field(i).Type) {
+			if IsZeroOfUnderlyingType(v.Field(i).Interface()) {
+				continue
+			}
+
 			msg, err := Validate(v.Field(i).Interface())
 			if err != nil {
 				log.Debug("Error field validate:", err)
