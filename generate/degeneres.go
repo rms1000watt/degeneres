@@ -2,6 +2,7 @@ package generate
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
@@ -181,19 +182,18 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 	for _, protoMessage := range proto.Messages {
 		fields := []DgField{}
 		for _, protoField := range protoMessage.Fields {
-			dt := cleanDataType(protoField.DataType)
+			dt := cleanDataType(protoField)
 
 			fields = append(fields, DgField{
-				Name:         genName(protoField.Name),
-				DataTypeName: genName(dt),
-				// TODO: Fix data type if map exists
-				DataType:         fixDataType(protoField.DataType, false, protoField.Rule),
+				Name:             genName(protoField.Name),
+				DataTypeName:     genName(dt),
+				DataType:         fixDataType(protoField, false),
 				Transform:        getTransformFromOptions(protoField.Options),
 				Validate:         getValidateFromOptions(protoField.Options),
 				Rule:             protoField.Rule,
-				IsRepeated:       getIsRepeated(protoField.Rule, protoField.DataType),
-				IsStruct:         getIsStruct(protoField.DataType),
-				IsRepeatedStruct: getIsRepeatedStruct(protoField.Rule, protoField.DataType),
+				IsRepeated:       getIsRepeated(protoField.Rule, dt),
+				IsStruct:         getIsStruct(dt),
+				IsRepeatedStruct: getIsRepeatedStruct(protoField.Rule, dt),
 			})
 
 		}
@@ -336,19 +336,18 @@ func getInputs(proto Proto) (out []DgMessage) {
 	for _, input := range inputs {
 		fields := []DgField{}
 		for _, field := range input.Fields {
-			dt := cleanDataType(field.DataType)
+			dt := cleanDataType(field)
 
 			fields = append(fields, DgField{
-				Name:         genName(field.Name),
-				DataTypeName: genName(dt),
-				// TODO Fix DataType if map exists
-				DataType:         fixDataType(field.DataType, true, field.Rule),
+				Name:             genName(field.Name),
+				DataTypeName:     genName(dt),
+				DataType:         fixDataType(field, true),
 				Transform:        getTransformFromOptions(field.Options),
 				Validate:         getValidateFromOptions(field.Options),
 				Rule:             field.Rule,
-				IsRepeated:       getIsRepeated(field.Rule, field.DataType),
-				IsStruct:         getIsStruct(field.DataType),
-				IsRepeatedStruct: getIsRepeatedStruct(field.Rule, field.DataType),
+				IsRepeated:       getIsRepeated(field.Rule, dt),
+				IsStruct:         getIsStruct(dt),
+				IsRepeatedStruct: getIsRepeatedStruct(field.Rule, dt),
 			})
 		}
 		out = append(out, DgMessage{
@@ -418,6 +417,10 @@ func fixOptionName(in string) (out string) {
 }
 
 func genName(in string) Name {
+	if strings.TrimSpace(in) == "" {
+		return Name{}
+	}
+
 	camel := ToCamelCase(in)
 	snake := ToSnakeCase(in)
 	dash := ToDashCase(in)
@@ -471,6 +474,11 @@ func getIsStruct(dataType string) bool {
 			return false
 		}
 	}
+
+	if strings.Contains(dataType, "map[") {
+		return false
+	}
+
 	return true
 }
 
@@ -496,7 +504,21 @@ func dgMessageInMessages(message DgMessage, messages []DgMessage) bool {
 	return false
 }
 
-func fixDataType(dataType string, isInput bool, fieldRule string) string {
+// func fixDataType(dataType string, isInput bool, fieldRule string) string {
+func fixDataType(field Field, isInput bool) string {
+	dataType := field.DataType
+	fieldRule := field.Rule
+
+	// TODO: What if Datatype is namespaced?
+	// TODO: What if Datatype is not built in?
+	// TODO: What if repeated map?
+	if !isInput && field.MapKeyDataType != "" && field.MapValueDataType != "" {
+		return fmt.Sprintf("map[%s]%s", field.MapKeyDataType, field.MapValueDataType)
+	}
+	if isInput && field.MapKeyDataType != "" && field.MapValueDataType != "" {
+		return fmt.Sprintf("*map[%s]%s", field.MapKeyDataType, field.MapValueDataType)
+	}
+
 	isRepeated := strings.ToLower(fieldRule) == FieldRuleRepeated
 
 	splitDT := strings.Split(dataType, ".")
@@ -598,7 +620,14 @@ func ToDashCase(in string) (out string) {
 	return strings.Replace(ToSnakeCase(in), "_", "-", -1)
 }
 
-func cleanDataType(in string) (out string) {
+func cleanDataType(field Field) (out string) {
+	in := field.DataType
 	inArr := strings.Split(in, ".")
-	return inArr[len(inArr)-1]
+	out = inArr[len(inArr)-1]
+
+	if field.MapKeyDataType != "" && field.MapValueDataType != "" {
+		return fmt.Sprintf("map[%s]%s", field.MapKeyDataType, field.MapValueDataType)
+	}
+
+	return
 }

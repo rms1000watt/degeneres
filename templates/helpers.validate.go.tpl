@@ -8,7 +8,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// TODO: Change with https://play.golang.org/p/u4UQbo0ZeM
 func Validate(in interface{}) (msg string, err error) {
 	t := reflect.TypeOf(in).Elem()
 	v := reflect.ValueOf(in).Elem()

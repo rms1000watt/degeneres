@@ -34,11 +34,13 @@ func Merge(proto *Proto, importedProtos ...Proto) (err error) {
 				dataType := proto.Package + "." + field.DataType
 
 				message.Fields[fieldInd] = Field{
-					Name:     field.Name,
-					DataType: dataType,
-					Position: field.Position,
-					Rule:     field.Rule,
-					Options:  options,
+					Name:             field.Name,
+					DataType:         dataType,
+					Position:         field.Position,
+					Rule:             field.Rule,
+					Options:          options,
+					MapKeyDataType:   field.MapKeyDataType,
+					MapValueDataType: field.MapValueDataType,
 				}
 
 				importFields = append(importFields, dataType)

@@ -178,7 +178,7 @@ func isBuiltin(fieldType reflect.Type) bool {
 			return true
 		}
 	}
-	return false
+	return strings.Contains(fieldType.String(), "map[")
 }
 
 // Courtesy of https://stackoverflow.com/questions/13901819/quick-way-to-detect-empty-values-via-reflection-in-go
