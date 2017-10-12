@@ -258,10 +258,23 @@ func (s Scanner) MessageState() State {
 		})
 		dataType = s.getFieldDataType()
 	}
-	s.Emit(Token{
-		Name:  TokenFieldDataType,
-		Value: string(dataType),
-	})
+
+	if isDataTypeMap(string(dataType)) {
+		key, value := s.getMapDataTypes()
+		s.Emit(Token{
+			Name:  TokenFieldMapKeyDataType,
+			Value: string(key),
+		})
+		s.Emit(Token{
+			Name:  TokenFieldMapValueDataType,
+			Value: string(value),
+		})
+	} else {
+		s.Emit(Token{
+			Name:  TokenFieldDataType,
+			Value: string(dataType),
+		})
+	}
 
 	key := s.getFieldKey()
 	s.Emit(Token{
@@ -396,6 +409,61 @@ func (s Scanner) getKey(runes ...rune) (key []rune) {
 
 		key = append(key, r)
 	}
+	return
+}
+
+func (s Scanner) getMapDataTypes() (key []rune, value []rune) {
+	// Flush out whitespace
+	for {
+		r := s.read()
+
+		if isEOF(r) {
+			break
+		}
+
+		if !isWhitespace(r) {
+			s.unread()
+			break
+		}
+	}
+
+	// Enter in the type definition
+	r := s.read()
+	if !isLessThan(r) {
+		// TODO: HANDLE THIS ERROR CASE!!!!!!!
+		return
+	}
+
+	// Get the key data type
+	for {
+		r := s.read()
+
+		if isEOF(r) || isComma(r) {
+			break
+		}
+
+		if isWhitespace(r) {
+			continue
+		}
+
+		key = append(key, r)
+	}
+
+	// Get the value data type
+	for {
+		r := s.read()
+
+		if isEOF(r) || isGreaterThan(r) {
+			break
+		}
+
+		if isWhitespace(r) {
+			continue
+		}
+
+		value = append(value, r)
+	}
+
 	return
 }
 
@@ -656,9 +724,22 @@ func isForwardSlash(r rune) bool {
 	return r == '/'
 }
 
+func isLessThan(r rune) bool {
+	return r == '<'
+}
+
+func isGreaterThan(r rune) bool {
+	return r == '>'
+}
+
 func isFieldRule(in string) bool {
 	in = strings.ToLower(in)
 	return in == FieldRuleOptional ||
 		in == FieldRuleRepeated ||
 		in == FieldRuleRequired
+}
+
+func isDataTypeMap(in string) bool {
+	in = strings.ToLower(in)
+	return in == DataTypeMap
 }

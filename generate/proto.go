@@ -51,11 +51,13 @@ type Message struct {
 }
 
 type Field struct {
-	Name     string
-	DataType string
-	Position string
-	Rule     string
-	Options  []Option
+	Name             string
+	DataType         string
+	MapKeyDataType   string
+	MapValueDataType string
+	Position         string
+	Rule             string
+	Options          []Option
 }
 
 type KV struct {

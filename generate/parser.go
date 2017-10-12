@@ -82,6 +82,10 @@ func Parse(tokens chan Token) (proto Proto) {
 			fieldOption = Option{}
 		case TokenFieldRule:
 			field.Rule = token.Value
+		case TokenFieldMapKeyDataType:
+			field.MapKeyDataType = token.Value
+		case TokenFieldMapValueDataType:
+			field.MapValueDataType = token.Value
 		}
 	}
 

@@ -36,6 +36,8 @@ const (
 	MiddlewareNoCache = "NoCache"
 	MiddlewareLogger  = "Logger"
 	MiddlewareSecure  = "Secure"
+
+	DataTypeMap = "map"
 )
 
 var (
@@ -114,6 +116,8 @@ type DgField struct {
 	Name
 	DataTypeName     Name
 	DataType         string
+	MapKeyDataType   string
+	MapValueDataType string
 	Transform        string
 	Validate         string
 	Rule             string
@@ -180,8 +184,9 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 			dt := cleanDataType(protoField.DataType)
 
 			fields = append(fields, DgField{
-				Name:             genName(protoField.Name),
-				DataTypeName:     genName(dt),
+				Name:         genName(protoField.Name),
+				DataTypeName: genName(dt),
+				// TODO: Fix data type if map exists
 				DataType:         fixDataType(protoField.DataType, false, protoField.Rule),
 				Transform:        getTransformFromOptions(protoField.Options),
 				Validate:         getValidateFromOptions(protoField.Options),
@@ -334,8 +339,9 @@ func getInputs(proto Proto) (out []DgMessage) {
 			dt := cleanDataType(field.DataType)
 
 			fields = append(fields, DgField{
-				Name:             genName(field.Name),
-				DataTypeName:     genName(dt),
+				Name:         genName(field.Name),
+				DataTypeName: genName(dt),
+				// TODO Fix DataType if map exists
 				DataType:         fixDataType(field.DataType, true, field.Rule),
 				Transform:        getTransformFromOptions(field.Options),
 				Validate:         getValidateFromOptions(field.Options),

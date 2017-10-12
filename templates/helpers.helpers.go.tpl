@@ -1,9 +1,17 @@
 package helpers
 
 import (
+	"bufio"
 	"crypto/rand"
+	"errors"
+	"fmt"
+	"os"
+	"os/exec"
 	"reflect"
 	"strings"
+	"syscall"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -177,3 +185,82 @@ func isBuiltin(fieldType reflect.Type) bool {
 func IsZeroOfUnderlyingType(x interface{}) bool {
 	return reflect.DeepEqual(x, reflect.Zero(reflect.TypeOf(x)).Interface())
 }
+
+func ExecDirectory(commandStr string, directory string, envVars ...string) (err error) {
+	if err := os.Chdir(directory); err != nil {
+		log.Errorf("Failed to cd %s: %s", directory, err)
+		return err
+	}
+
+	return Exec(commandStr, envVars...)
+}
+
+func Exec(commandStr string, envVars ...string) (err error) {
+	if strings.TrimSpace(commandStr) == "" {
+		return errors.New("No command provided")
+	}
+
+	var name string
+	var args []string
+
+	cmdArr := strings.Split(commandStr, " ")
+	name = cmdArr[0]
+
+	if len(cmdArr) > 1 {
+		args = cmdArr[1:]
+	}
+
+	command := exec.Command(name, args...)
+	command.Env = append(os.Environ(), envVars...)
+
+	stdout, err := command.StdoutPipe()
+	if err != nil {
+		log.Error("Failed creating command stdoutpipe: ", err)
+		return err
+	}
+	defer stdout.Close()
+	stdoutReader := bufio.NewReader(stdout)
+
+	stderr, err := command.StderrPipe()
+	if err != nil {
+		log.Error("Failed creating command stderrpipe: ", err)
+		return err
+	}
+	defer stderr.Close()
+	stderrReader := bufio.NewReader(stderr)
+
+	if err := command.Start(); err != nil {
+		log.Error("Failed starting command: ", err)
+		return err
+	}
+
+	go handleReader(stdoutReader, false)
+	go handleReader(stderrReader, true)
+
+	if err := command.Wait(); err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				log.Debug("Exit Status: ", status.ExitStatus())
+				return err
+			}
+		}
+		log.Debug("Failed to wait for command: ", err)
+		return err
+	}
+
+	return
+}
+
+func handleReader(reader *bufio.Reader, isStderr bool) {
+	printOutput := log.GetLevel() == log.DebugLevel
+	for {
+		str, err := reader.ReadString('\n')
+		if err != nil {
+			break
+		}
+		if printOutput {
+			fmt.Print(str)
+		}
+	}
+}
+
