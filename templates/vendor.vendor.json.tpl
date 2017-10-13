@@ -37,13 +37,6 @@
 			"path": "github.com/spf13/pflag",
 			"revision": "9a906f17374922ed0f74e1b2f593d3723f2ffb00",
 			"revisionTime": "2017-04-05T14:18:32Z"
-		},
-		{
-			"checksumSHA1": "2ncnCWXu6MhDubZJYmyFNBYsrXE=",
-			"origin": "github.com/sirupsen/logrus/vendor/golang.org/x/sys/unix",
-			"path": "golang.org/x/sys/unix",
-			"revision": "7dd06bf38e1e13df288d471a57d5adbac106be9e",
-			"revisionTime": "2017-06-30T00:54:20Z"
 		}
 	],
 	"rootPath": "{{.ImportPath}}"
