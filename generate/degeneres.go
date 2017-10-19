@@ -538,25 +538,35 @@ func isFloat(in string) bool {
 
 func fixDataTypeDB(field Field, isInput bool) string {
 	dataType := field.DataType
+	dataType = strings.ToLower(dataType)
+	isRepeated := strings.ToLower(field.Rule) == FieldRuleRepeated
+
 	fmt.Println("DataType:", dataType)
 	fmt.Println("Field.Rule:", field.Rule)
 
-	// If datatype is map
+	// Handle Map case
 	if field.MapKeyDataType != "" && field.MapValueDataType != "" {
-		return "types.JSONText"
+		return "types.NullJSONText"
 	}
 
-	// If repeated, ignore?
-	isRepeated := strings.ToLower(field.Rule) == FieldRuleRepeated
-	if isRepeated {
-		// fmt.Println("FixDataTypeDB: IsRepeated: Ignoring...")
-		field.DataType += "DB"
-		return fixDataType(field, isInput)
+	// Handle repeated builtin case
+	if isDbDataType(dataType) && isRepeated {
+		if isInt(dataType) {
+			return "[]sql.NullInt64"
+		}
+		if isFloat(dataType) {
+			return "[]sql.NullFloat64"
+		}
+		if dataType == "string" {
+			return "[]sql.NullString"
+		}
+		if dataType == "bool" {
+			return "[]sql.NullBool"
+		}
 	}
 
-	// The simplest of cases
-	dataType = strings.ToLower(dataType)
-	if isDbDataType(dataType) {
+	// Handle builtin case
+	if isDbDataType(dataType) && !isRepeated {
 		if isInt(dataType) {
 			return "sql.NullInt64"
 		}
@@ -571,6 +581,8 @@ func fixDataTypeDB(field Field, isInput bool) string {
 		}
 	}
 
+	// Handle repeated and not repeated struct case
+	field.DataType += "DB"
 	return fixDataType(field, isInput)
 }
 
