@@ -71,7 +71,6 @@ func Convert{{$input.TitleCamel}}({{$input.Camel}} *{{$input.TitleCamel}}) ({{Mi
 	}
 	{{MinusP $input.Camel}}.{{$field.TitleCamel}} = {{$field.Camel}}
 
-
 	{{else}}
 
 	if {{$input.Camel}}.{{$field.TitleCamel}} != nil {

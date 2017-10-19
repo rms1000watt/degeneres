@@ -536,16 +536,17 @@ func isFloat(in string) bool {
 		in == "float64"
 }
 
+func isMap(k, v string) bool {
+	return k != "" && v != ""
+}
+
 func fixDataTypeDB(field Field, isInput bool) string {
 	dataType := field.DataType
 	dataType = strings.ToLower(dataType)
 	isRepeated := strings.ToLower(field.Rule) == FieldRuleRepeated
 
-	fmt.Println("DataType:", dataType)
-	fmt.Println("Field.Rule:", field.Rule)
-
 	// Handle Map case
-	if field.MapKeyDataType != "" && field.MapValueDataType != "" {
+	if isMap(field.MapKeyDataType, field.MapValueDataType) {
 		return "types.NullJSONText"
 	}
 

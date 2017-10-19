@@ -32,9 +32,12 @@ var (
 	errFailedReadingFile   = errors.New("Failed reading file")
 	errFailedUnmarshalFile = errors.New("Failed unmarshal file")
 	funcMap                = template.FuncMap{
-		"TimeNowYear": time.Now().Year,
-		"MinusP":      MinusP,
-		"MinusStar":   MinusStar,
+		"TimeNowYear":           time.Now().Year,
+		"MinusP":                MinusP,
+		"AddDB":                 AddDB,
+		"ConvertFromDBDataType": ConvertFromDBDataType,
+		"IsMap":                 IsMap,
+		"MinusStar":             MinusStar,
 	}
 	degeneresDir = filepath.Join(build.Default.GOPATH, "src", "github.com", "rms1000watt", "degeneres")
 )
