@@ -42,6 +42,12 @@ const (
 )
 
 var (
+	dbDataTypes = []string{
+		"int",
+		"string",
+		"bool",
+		"float",
+	}
 	protoDataTypes = []string{
 		"double",
 		"float",
@@ -117,6 +123,7 @@ type DgField struct {
 	Name
 	DataTypeName     Name
 	DataType         string
+	DataTypeDB       string
 	MapKeyDataType   string
 	MapValueDataType string
 	Transform        string
@@ -188,6 +195,7 @@ func NewDegeneres(proto Proto) (dg Degeneres, err error) {
 				Name:             genName(protoField.Name),
 				DataTypeName:     genName(dt),
 				DataType:         fixDataType(protoField, false),
+				DataTypeDB:       fixDataTypeDB(protoField, false),
 				Transform:        getTransformFromOptions(protoField.Options),
 				Validate:         getValidateFromOptions(protoField.Options),
 				Rule:             protoField.Rule,
@@ -342,6 +350,7 @@ func getInputs(proto Proto) (out []DgMessage) {
 				Name:             genName(field.Name),
 				DataTypeName:     genName(dt),
 				DataType:         fixDataType(field, true),
+				DataTypeDB:       fixDataTypeDB(field, true),
 				Transform:        getTransformFromOptions(field.Options),
 				Validate:         getValidateFromOptions(field.Options),
 				Rule:             field.Rule,
@@ -504,7 +513,67 @@ func dgMessageInMessages(message DgMessage, messages []DgMessage) bool {
 	return false
 }
 
-// func fixDataType(dataType string, isInput bool, fieldRule string) string {
+func isDbDataType(in string) bool {
+	in = strings.ToLower(in)
+	for _, dbDataType := range dbDataTypes {
+		if strings.Contains(in, dbDataType) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isInt(in string) bool {
+	return in == "int" ||
+		in == "int32" ||
+		in == "int64"
+}
+
+func isFloat(in string) bool {
+	return in == "float" ||
+		in == "float32" ||
+		in == "float64"
+}
+
+func fixDataTypeDB(field Field, isInput bool) string {
+	dataType := field.DataType
+	fmt.Println("DataType:", dataType)
+	fmt.Println("Field.Rule:", field.Rule)
+
+	// If datatype is map
+	if field.MapKeyDataType != "" && field.MapValueDataType != "" {
+		return "types.JSONText"
+	}
+
+	// If repeated, ignore?
+	isRepeated := strings.ToLower(field.Rule) == FieldRuleRepeated
+	if isRepeated {
+		// fmt.Println("FixDataTypeDB: IsRepeated: Ignoring...")
+		field.DataType += "DB"
+		return fixDataType(field, isInput)
+	}
+
+	// The simplest of cases
+	dataType = strings.ToLower(dataType)
+	if isDbDataType(dataType) {
+		if isInt(dataType) {
+			return "sql.NullInt64"
+		}
+		if isFloat(dataType) {
+			return "sql.NullFloat64"
+		}
+		if dataType == "string" {
+			return "sql.NullString"
+		}
+		if dataType == "bool" {
+			return "sql.NullBool"
+		}
+	}
+
+	return fixDataType(field, isInput)
+}
+
 func fixDataType(field Field, isInput bool) string {
 	dataType := field.DataType
 	fieldRule := field.Rule
