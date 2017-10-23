@@ -32,9 +32,10 @@ var (
 	errFailedReadingFile   = errors.New("Failed reading file")
 	errFailedUnmarshalFile = errors.New("Failed unmarshal file")
 	funcMap                = template.FuncMap{
-		"TimeNowYear":           time.Now().Year,
-		"MinusP":                MinusP,
-		"AddDB":                 AddDB,
+		"TimeNowYear": time.Now().Year,
+		"MinusP":      MinusP,
+		"AddDB":       AddDB,
+		"Add":         Add,
 		"ConvertFromDBDataType": ConvertFromDBDataType,
 		"IsMap":                 IsMap,
 		"MinusStar":             MinusStar,

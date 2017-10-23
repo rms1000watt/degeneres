@@ -21,6 +21,10 @@ func AddDB(in string) string {
 	return in + "DB"
 }
 
+func Add(x, y int) int {
+	return x + y
+}
+
 func ConvertFromDBDataType(in string) string {
 	if isDbDataType(in) {
 		if isInt(in) {
