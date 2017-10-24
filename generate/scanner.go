@@ -537,6 +537,11 @@ func (s Scanner) getFieldDataType(runes ...rune) (dataType []rune) {
 			break
 		}
 
+		if isLessThan(r) {
+			s.unread()
+			break
+		}
+
 		dataType = append(dataType, r)
 	}
 	return
