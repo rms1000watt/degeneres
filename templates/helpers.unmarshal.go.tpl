@@ -1,9 +1,10 @@
 package helpers
 
 import (
-    "encoding/json"
+  "encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -63,7 +64,15 @@ func Unmarshal(r *http.Request, dst interface{}) (err error) {
 		return
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(dst); err != nil {
+	if r.Body == nil {
+		return
+	}
+
+	err = json.NewDecoder(r.Body).Decode(dst)
+	switch {
+	case err == io.EOF:
+		return nil
+	case err != nil:
 		log.Debug("Error decoding r.Body")
 		return err
 	}
