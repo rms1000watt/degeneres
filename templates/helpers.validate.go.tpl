@@ -39,6 +39,7 @@ func Validate(in interface{}) (msg string, err error) {
 		fieldPointer := v.Field(i).Pointer()
 		if strings.Contains(strings.ToLower(tag), ValidateStrRequired) {
 			if fieldPointer == 0 {
+				log.Debugf("Required field missing: %s", v.Type().Field(i).Name)
 				return ValidateStrRequiredErr, nil
 			}
 		}
