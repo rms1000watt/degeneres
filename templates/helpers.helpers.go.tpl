@@ -178,7 +178,19 @@ func isBuiltin(fieldType reflect.Type) bool {
 			return true
 		}
 	}
-	return strings.Contains(fieldType.String(), "map[")
+	
+	if strings.Contains(fieldType.String(), "map[") {
+		return true
+	}
+
+	ft := strings.Replace(fieldType.String(), "[]*", "", -1)
+	for _, builtinType := range builtinTypes {
+		if ft == builtinType.String() {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Courtesy of https://stackoverflow.com/questions/13901819/quick-way-to-detect-empty-values-via-reflection-in-go
