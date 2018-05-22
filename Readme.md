@@ -1,4 +1,6 @@
 ## Degeneres
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Frms1000watt%2Fdegeneres.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Frms1000watt%2Fdegeneres?ref=badge_shield)
+
 
 Degeneres, the boilerplate generator for REST-like servers in Go!
 
@@ -333,3 +335,7 @@ option (dg.middleware.no_cache) = true;
 - [ ] DB connection example (inversion of control)
 - [ ] Docker compose
 - [ ] Workout kinks in workflow
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Frms1000watt%2Fdegeneres.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Frms1000watt%2Fdegeneres?ref=badge_large)
